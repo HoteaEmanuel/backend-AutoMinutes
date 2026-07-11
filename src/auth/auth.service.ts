@@ -5,6 +5,11 @@ import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { LoginDto } from './dto/login.dto';
 
+type TokenPayload = {
+  sub: string;
+  email: string;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,9 +18,18 @@ export class AuthService {
   ) {}
   private static saltRounds = 12;
 
+  async createAccessToken(payload: TokenPayload) {
+    const accessToken = await this.tokenService.signAccess({
+      email: payload.email,
+      sub: payload.sub,
+    });
+
+    return accessToken;
+  }
+
   async createTokens(user: UserDocument) {
     const refreshToken = await this.tokenService.signRefresh({ sub: user._id.toHexString() });
-    const accessToken = await this.tokenService.signAccess({
+    const accessToken = await this.createAccessToken({
       sub: user._id.toHexString(),
       email: user.email,
     });
@@ -35,7 +49,6 @@ export class AuthService {
     const user = await this.usersService.findByEmail(loginDto.email);
     if (!user) throw new UnauthorizedException();
 
-    console.log('USER TO AUTH', user);
     const passwordsMatch = await this.comparePasswords(loginDto.password, user.passwordHash);
 
     if (!passwordsMatch) throw new UnauthorizedException('Invalid credentials');
@@ -51,5 +64,16 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException(error);
     }
+  }
+
+  async refreshToken(refreshToken: string) {
+    const tokenPayload = (await this.tokenService.verifyRefresh(refreshToken)) as {
+      sub: string;
+      email: string;
+    };
+
+    const accessToken = await this.createAccessToken(tokenPayload);
+
+    return { accessToken };
   }
 }

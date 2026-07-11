@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { CookieGuard } from './guards/cookie.guard';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { UsersService } from '@users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { type Response } from 'express';
+import type { Response, Request } from 'express';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { type AuthenticatedUser } from 'src/types/express';
 
@@ -51,9 +52,19 @@ export class AuthController {
   }
 
   @Post('refresh')
-  refresh() {}
+  @UseGuards(CookieGuard)
+  async refresh(@Req() request: Request) {
+    return await this.authService.refreshToken(request.headers.cookie?.split('=')[1] as string); // { accessToken }
+  }
 
   @Post('logout')
   @UseGuards(AuthGuard)
-  logout() {}
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('refresh_token', {
+      path: '/auth',
+    });
+    return {
+      success: true,
+    };
+  }
 }
