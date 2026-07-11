@@ -32,6 +32,24 @@ export class UsersService {
     return user;
   }
 
+  async findOrCreateGoogleUser(profile: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  }) {
+    const existing = await this.userModel.findOne({ email: profile.email });
+    if (existing) return existing;
+
+    return await this.userModel.create({
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatar: profile.avatar,
+      provider: 'google',
+    });
+  }
+
   async findByEmail(email: string) {
     const user = await this.userModel
       .findOne({ email })

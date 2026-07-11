@@ -6,10 +6,16 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './guards/auth.guard';
 import { TokenService } from './token.service';
+import googleOauthConfig from './config/google-oauth.config';
 
 @Module({
   providers: [AuthService, AuthGuard, TokenService],
-  imports: [ConfigModule, UsersModule, JwtModule.register({}), AuthModule],
+  imports: [
+    ConfigModule,
+    ConfigModule.forFeature(googleOauthConfig),
+    UsersModule,
+    JwtModule.register({}),
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

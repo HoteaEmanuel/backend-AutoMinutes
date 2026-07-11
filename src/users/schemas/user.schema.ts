@@ -14,10 +14,13 @@ export class User {
   @Prop({ required: true })
   lastName!: string;
 
-  @Prop({ required: true, select: false })
-  passwordHash!: string;
+  @Prop({ required: false, select: false })
+  passwordHash?: string;
 
   @Prop({ default: 'local', enum: ['local', 'google'] })
   provider!: string;
+
+  @Prop()
+  avatar?: string;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
