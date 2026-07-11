@@ -1,6 +1,3 @@
-# Local development database for AutoMinutes.
-# Every team member runs this the same way:  docker compose up -d
-# No MongoDB auth is configured on purpose — this is a local dev container only.
 services:
   mongo:
     image: mongo:7
@@ -17,7 +14,6 @@ services:
       retries: 5
       start_period: 20s
 
-  # Optional web UI to browse the data at http://localhost:8081  (login: admin / admin)
   mongo-express:
     image: mongo-express:1.0.2
     container_name: autominutes-mongo-express
