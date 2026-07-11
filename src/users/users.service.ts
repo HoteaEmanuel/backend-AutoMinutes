@@ -1,39 +1,80 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from './schemas/user.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [];
-  private nextId = 1;
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  create(createUserDto: CreateUserDto): User {
-    const user: User = { id: this.nextId++, ...createUserDto };
-    this.users.push(user);
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
+      const userCreated = await this.userModel.create({
+        passwordHash: hashedPassword,
+        ...createUserDto,
+      });
+      return userCreated;
+    } catch (error) {
+      console.log(error);
+      throw new Error();
+    }
+  }
+
+  async findAll() {
+    return await this.userModel.find({});
+  }
+
+  async findById(_id: string) {
+    const user = await this.userModel.findOne({ _id });
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  findAll(): User[] {
-    return this.users;
+  async findOrCreateGoogleUser(profile: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  }) {
+    const existing = await this.userModel.findOne({ email: profile.email });
+    if (existing) return existing;
+
+    return await this.userModel.create({
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatar: profile.avatar,
+      provider: 'google',
+    });
   }
 
-  findOne(id: number): User {
-    const user = this.users.find((u) => u.id === id);
-    if (!user) throw new NotFoundException(`User #${id} not found`);
+  async findByEmail(email: string) {
+    const user = await this.userModel
+      .findOne({ email })
+      .select({ passwordHash: true, email: true })
+      .lean();
+    if (!user) throw new NotFoundException(`User with email: ${email} was not found`);
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto): User {
-    const user = this.findOne(id);
-    Object.assign(user, updateUserDto);
-    return user;
-  }
+  // findOne(id: number): User {
+  //   const user = this.users.find((u) => u.id === id);
+  //   if (!user) throw new NotFoundException(`User #${id} not found`);
+  //   return user;
+  // }
 
-  remove(id: number): User {
-    const index = this.users.findIndex((u) => u.id === id);
-    if (index === -1) throw new NotFoundException(`User #${id} not found`);
-    const [removed] = this.users.splice(index, 1);
-    return removed;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto): User {
+  //   const user = this.findOne(id);
+  //   Object.assign(user, updateUserDto);
+  //   return user;
+  // }
+
+  // remove(id: number): User {
+  //   const index = this.users.findIndex((u) => u.id === id);
+  //   if (index === -1) throw new NotFoundException(`User #${id} not found`);
+  //   const [removed] = this.users.splice(index, 1);
+  //   return removed;
+  // }
 }
