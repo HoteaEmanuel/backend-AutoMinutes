@@ -41,7 +41,7 @@ export class AuthController {
     });
   }
 
-  @Post('register')
+  @Post('signup')
   async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const user = await this.usersService.create(registerDto);
     const tokenData = { sub: user._id.toString(), email: user.email };
@@ -69,7 +69,7 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(CookieGuard)
   async refresh(@Req() request: Request) {
-    return await this.authService.refreshToken(request.headers.cookie?.split('=')[1] as string); // { accessToken }
+    return await this.authService.refreshToken(request.cookies.refresh_token as string); // { accessToken }
   }
 
   @Get('google')
@@ -96,7 +96,7 @@ export class AuthController {
     console.log('BACK HERE');
     if (error || !code) throw new UnauthorizedException();
     const { refreshToken } = await this.authService.handleGoogleCallback(code);
-
+    console.log('REFRESH FROM GOOGLE', refreshToken);
     this.saveCookie(refreshToken, res);
     return res.redirect(`${process.env.FRONTEND_URL}/oauth`);
   }

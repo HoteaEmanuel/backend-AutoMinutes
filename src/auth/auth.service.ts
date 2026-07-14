@@ -101,7 +101,7 @@ export class AuthService {
 
     const accessToken = await this.createAccessToken(tokenPayload);
 
-    const user = await this.usersService.findByEmail(tokenPayload.email);
+    const user = await this.usersService.findById(tokenPayload.sub);
 
     return { accessToken, user };
   }
