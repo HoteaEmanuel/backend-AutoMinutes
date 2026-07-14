@@ -55,7 +55,6 @@ export class AuthController {
     const { accessToken, refreshToken, user } = await this.authService.authenticate(loginDto);
 
     this.saveCookie(refreshToken, res);
-
     return { accessToken, user };
   }
 
@@ -98,7 +97,7 @@ export class AuthController {
     const { refreshToken } = await this.authService.handleGoogleCallback(code);
     console.log('REFRESH FROM GOOGLE', refreshToken);
     this.saveCookie(refreshToken, res);
-    return res.redirect(`${process.env.FRONTEND_URL}/oauth`);
+    return res.redirect(`${process.env.FRONTEND_URL}/auth/oauth`);
   }
 
   @Post('logout')

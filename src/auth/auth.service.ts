@@ -1,4 +1,3 @@
-import { UserDocument } from './../users/schemas/user.schema';
 import { UsersService } from './../users/users.service';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { type ConfigType } from '@nestjs/config';
@@ -69,7 +68,7 @@ export class AuthService {
 
   async authenticate(loginDto: LoginDto) {
     const user = await this.usersService.findByEmail(loginDto.email);
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('User not found');
 
     if (!user.passwordHash)
       throw new UnauthorizedException('This account used Google to sign in - Continue with Google');
