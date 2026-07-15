@@ -1,12 +1,13 @@
 import { TokenService } from './../token.service';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { type Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly tokenService: TokenService) {}
   async canActivate(context: ExecutionContext) {
-    const request: Request = context.switchToHttp().getRequest();
+    const request: Request = this.getRequest(context);
 
     const authorization = request.headers.authorization;
     console.log('Authorization:', authorization);
@@ -36,5 +37,12 @@ export class AuthGuard implements CanActivate {
     } catch (error) {
       throw new UnauthorizedException(error);
     }
+  }
+
+  // Folosesc REST + Graphql deci trebuie sa vad cum pot extrage requestul din context conform typeului
+  getRequest(context: ExecutionContext): Request {
+    if (context.getType<GqlContextType>() === 'graphql')
+      return GqlExecutionContext.create(context).getContext().req! as Request;
+    return context.switchToHttp().getRequest();
   }
 }
