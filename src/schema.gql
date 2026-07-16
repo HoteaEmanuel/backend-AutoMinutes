@@ -1,0 +1,43 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateMeetingDto {
+  description: String
+  scheduledAt: DateTime!
+  title: String!
+  transcript: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Meeting {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  scheduledAt: DateTime!
+  status: MeetingStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+enum MeetingStatus {
+  COMPLETED
+  FAILED
+  PENDING
+  PROCESSING
+}
+
+type Mutation {
+  createMeeting(createMeetingInput: CreateMeetingDto!): Meeting!
+  deleteMeeting(id: String!): Meeting!
+}
+
+type Query {
+  findAll: [Meeting!]!
+  findMeeting(id: String!): Meeting!
+  findUserMeetings: [Meeting!]!
+}

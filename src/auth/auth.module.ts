@@ -17,5 +17,6 @@ import googleOauthConfig from './config/google-oauth.config';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
+  exports: [AuthGuard, TokenService],
 })
 export class AuthModule {}
