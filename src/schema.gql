@@ -36,8 +36,22 @@ type Mutation {
   deleteMeeting(id: String!): Meeting!
 }
 
+type PaginatedMeetings {
+  meetings: [Meeting!]!
+  pageNo: Int!
+  pageSize: Int!
+  totalCount: Int!
+}
+
+input PaginatedMeetingsDto {
+  contentLike: String
+  pageNo: Float!
+  pageSize: Float!
+  status: MeetingStatus
+}
+
 type Query {
   findAll: [Meeting!]!
   findMeeting(id: String!): Meeting!
-  findUserMeetings: [Meeting!]!
+  findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
 }
