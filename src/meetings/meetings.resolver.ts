@@ -24,7 +24,6 @@ export class MeetingsResolver {
     @Args('input') paginatedInput: PaginatedMeetingsDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    console.log('INPUT STAUTS: ', paginatedInput.status);
     return await this.meetingsService.findUserMeetings(user.userId, paginatedInput);
   }
 

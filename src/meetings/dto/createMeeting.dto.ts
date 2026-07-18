@@ -32,4 +32,3 @@ export class CreateMeetingDto {
   @IsNotEmpty()
   transcript?: string;
 }
-

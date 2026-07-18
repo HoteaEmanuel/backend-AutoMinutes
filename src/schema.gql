@@ -47,6 +47,9 @@ input PaginatedMeetingsDto {
   contentLike: String
   pageNo: Float!
   pageSize: Float!
+  scheduledFrom: DateTime
+  scheduledTo: DateTime
+  sortDateOrder: String
   status: MeetingStatus
 }
 

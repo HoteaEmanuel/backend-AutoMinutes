@@ -21,7 +21,8 @@ export class MeetingsService {
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
-    const { pageNo, pageSize, contentLike } = input;
+    const { pageNo, pageSize, contentLike, scheduledFrom, scheduledTo, sortDateOrder, status } =
+      input;
 
     const filter: QueryFilter<Meeting> = { owner: new Types.ObjectId(userId) };
 
@@ -35,13 +36,21 @@ export class MeetingsService {
 
     if (or.length) filter.$or = or;
 
-    if (input.status && input.status.toLowerCase() !== 'all') filter.status = input.status;
+    if (status && status.toLowerCase() !== 'all') filter.status = status;
 
-    console.log('FILTER ', filter);
+    // Interval de filtrare dupa data
+    if (scheduledFrom || scheduledTo) {
+      filter.scheduledAt = {
+        ...(scheduledFrom && { $gte: scheduledFrom }),
+        ...(scheduledTo && { $lt: scheduledTo }),
+      };
+    }
+
+    const sortByDateOrder = sortDateOrder?.toLowerCase() === 'newest first' ? -1 : 1;
     const [meetings, totalCount] = await Promise.all([
       this.meetingModel
         .find(filter)
-        .sort({ scheduledAt: -1 })
+        .sort({ scheduledAt: sortByDateOrder })
         .skip((pageNo - 1) * pageSize)
         .limit(pageSize),
       this.meetingModel.countDocuments(filter),
