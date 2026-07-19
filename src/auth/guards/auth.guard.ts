@@ -10,7 +10,6 @@ export class AuthGuard implements CanActivate {
     const request: Request = this.getRequest(context);
 
     const authorization = request.headers.authorization;
-    console.log('Authorization:', authorization);
 
     if (!authorization) throw new UnauthorizedException();
 
@@ -19,8 +18,6 @@ export class AuthGuard implements CanActivate {
     const token = authorization.split(' ')[1]; // Luam tokenul
 
     if (!token) throw new UnauthorizedException();
-
-    console.log('TOKEN SENT', token);
 
     try {
       const tokenPayload = (await this.tokenService.verifyAccess(token)) as {

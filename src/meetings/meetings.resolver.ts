@@ -6,6 +6,8 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
 import { CreateMeetingDto } from './dto/createMeeting.dto';
+import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
+import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
 
 @Resolver(() => Meeting)
 export class MeetingsResolver {
@@ -16,10 +18,13 @@ export class MeetingsResolver {
     return await this.meetingsService.findAll();
   }
 
-  @Query(() => [Meeting])
+  @Query(() => PaginatedMeetings)
   @UseGuards(AuthGuard)
-  async findUserMeetings(@CurrentUser() user: AuthenticatedUser) {
-    return await this.meetingsService.findUserMeetings(user.userId);
+  async findUserMeetings(
+    @Args('input') paginatedInput: PaginatedMeetingsDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.meetingsService.findUserMeetings(user.userId, paginatedInput);
   }
 
   @Query(() => Meeting)
