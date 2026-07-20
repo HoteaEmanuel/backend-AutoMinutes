@@ -70,7 +70,7 @@ export class MeetingsService {
 
   async createMeeting(userId: string, createMeetingDto: CreateMeetingDto) {
     const meeting = await this.meetingModel.create({
-      owner: userId,
+      owner: new Types.ObjectId(userId),
       title: createMeetingDto.title,
       description: createMeetingDto.description,
       scheduledAt: createMeetingDto.scheduledAt,
