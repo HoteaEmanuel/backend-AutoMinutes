@@ -2,6 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AIResults {
+  decisions: [String!]
+  detailedNotes: String
+  followUpNotes: String
+  summary: String!
+}
+
 input CreateMeetingDto {
   description: String
   scheduledAt: DateTime!
@@ -34,6 +41,7 @@ enum MeetingStatus {
 type Mutation {
   createMeeting(createMeetingInput: CreateMeetingDto!): Meeting!
   deleteMeeting(id: String!): Meeting!
+  generateAIResults(aiInput: aiResultsDto!): AIResults!
 }
 
 type PaginatedMeetings {
@@ -57,4 +65,9 @@ type Query {
   findAll: [Meeting!]!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
+}
+
+input aiResultsDto {
+  meetingId: String!
+  transcript: String!
 }
