@@ -1,7 +1,7 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
-import { aiResultsDto } from './dto/aiResults.dto';
+import { aiResultsDto } from './dtos/aiResults.dto';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
 

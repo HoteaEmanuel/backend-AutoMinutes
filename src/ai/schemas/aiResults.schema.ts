@@ -15,7 +15,7 @@ export class AIResults {
   @Prop(() => [String])
   decisions?: string[];
 
-  @Prop([])
+  @Prop(() => [Types.ObjectId])
   actionItemsIds!: Types.ObjectId[];
 
   @Prop()

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, QueryFilter, Types } from 'mongoose';
+import { Model, QueryFilter, StrictCondition, Types } from 'mongoose';
 import { Meeting, MeetingDocument } from './schemas/meetings.schema';
 import { CreateMeetingDto } from './dto/createMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
@@ -21,22 +21,20 @@ export class MeetingsService {
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
-    const { pageNo, pageSize, contentLike, scheduledFrom, scheduledTo, sortDateOrder, status } =
-      input;
+    const { pageNo, pageSize, search, scheduledFrom, scheduledTo, sortDateOrder, status } = input;
 
     const filter: QueryFilter<Meeting> = { owner: new Types.ObjectId(userId) };
 
     // Filtrez dupa titlu sau descriere
 
     const or: QueryFilter<Meeting>[] = [];
-    if (contentLike?.trim().length)
-      or.push({ title: { $regex: escapeRegex(contentLike), $options: 'i' } });
-    if (contentLike?.trim().length)
-      or.push({ description: { $regex: escapeRegex(contentLike), $options: 'i' } });
+    if (search?.trim().length) or.push({ title: { $regex: escapeRegex(search), $options: 'i' } });
+    if (search?.trim().length)
+      or.push({ description: { $regex: escapeRegex(search), $options: 'i' } });
 
     if (or.length) filter.$or = or;
 
-    if (status && status.toLowerCase() !== 'all') filter.status = status;
+    if (status) filter.status = status;
 
     // Interval de filtrare dupa data
     if (scheduledFrom || scheduledTo) {
@@ -91,5 +89,11 @@ export class MeetingsService {
     await this.transcriptModel.deleteMany({ meetingId });
     // ! Update cu mai multe delete uri cand sunt mai multe colectii care referentiaza
     return meeting;
+  }
+
+  async findTranscriptByMeetingId(meetingId: string) {
+    const transcript = await this.transcriptModel.findOne({ meetingId });
+    if (!transcript) return new NotFoundException('No transcript found for this meeting');
+    return transcript;
   }
 }
