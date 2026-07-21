@@ -6,6 +6,7 @@ import { UsersModule } from '@users/users.module';
 import { DatabaseModule } from '@database/database.module';
 import jwtConfig from '@config/jwt.config';
 import dbConfig from '@config/db.config';
+import aiConfig from '@config/ai.config';
 import { AuthModule } from 'src/auth/auth.module';
 import { MeetingsModule } from 'src/meetings/meetings.module';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -14,12 +15,13 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { join } from 'path';
 import type { Request, Response } from 'express';
 import { LoggerMiddleware } from 'src/middlewares/logger';
+import { AiModule } from 'src/ai/ai.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [jwtConfig, dbConfig],
+      load: [jwtConfig, dbConfig, aiConfig],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -33,6 +35,7 @@ import { LoggerMiddleware } from 'src/middlewares/logger';
     UsersModule,
     AuthModule,
     MeetingsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

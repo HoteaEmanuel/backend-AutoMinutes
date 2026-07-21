@@ -1,3 +1,4 @@
+import { GOOGLE_URL } from './../constants/auth';
 import { CookieGuard } from './guards/cookie.guard';
 import {
   Body,
@@ -83,7 +84,7 @@ export class AuthController {
       access_type: 'offline',
       prompt: 'select_account',
     });
-    res.redirect(`http://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    res.redirect(`${GOOGLE_URL}${params}`);
   }
 
   @Get('google/callback')
