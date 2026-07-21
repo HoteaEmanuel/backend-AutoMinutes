@@ -1,4 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Provider } from '@users/enums/provider.enum';
 import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
@@ -17,7 +18,7 @@ export class User {
   @Prop({ required: false, select: false })
   passwordHash?: string;
 
-  @Prop({ default: 'local', enum: ['local', 'google'] })
+  @Prop({ default: Provider.LOCAL, enum: Provider })
   provider!: string;
 
   @Prop()

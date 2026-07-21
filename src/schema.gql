@@ -3,10 +3,28 @@
 # ------------------------------------------------------
 
 type AIResults {
+  actionItems: [ActionItem!]!
   decisions: [String!]
   detailedNotes: String
   followUpNotes: String
+  meetingId: ID!
   summary: String!
+}
+
+type ActionItem {
+  assignee: User
+  deadline: DateTime
+  description: String
+  meetingId: ID!
+  status: ActionItemStatus!
+  title: String!
+}
+
+enum ActionItemStatus {
+  DONE
+  IN_PROGRESS
+  OPEN
+  UNKNOWN
 }
 
 input CreateMeetingDto {
@@ -24,10 +42,12 @@ scalar DateTime
 type Meeting {
   createdAt: DateTime!
   description: String
+  findMeetingTranscript(meetingId: String!): Transcript!
   id: ID!
   scheduledAt: DateTime!
   status: MeetingStatus!
   title: String!
+  transcript: Transcript
   updatedAt: DateTime!
 }
 
@@ -65,6 +85,20 @@ type Query {
   findAll: [Meeting!]!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
+}
+
+type Transcript {
+  content: String!
+  id: ID!
+  meetingId: ID!
+}
+
+type User {
+  avatar: String
+  email: String
+  firstName: String
+  lastName: String
+  provider: String
 }
 
 input aiResultsDto {

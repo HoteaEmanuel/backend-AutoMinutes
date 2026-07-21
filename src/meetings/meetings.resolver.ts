@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { MeetingsService } from './meetings.service';
 import { Meeting } from './entities/meeting.entity';
 import { UseGuards } from '@nestjs/common';
@@ -8,6 +8,7 @@ import type { AuthenticatedUser } from 'src/types/express';
 import { CreateMeetingDto } from './dto/createMeeting.dto';
 import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
 import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
+import { Transcript } from './entities/transcript.entity';
 
 @Resolver(() => Meeting)
 export class MeetingsResolver {
@@ -31,6 +32,11 @@ export class MeetingsResolver {
   @UseGuards(AuthGuard)
   async findMeeting(@Args('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return await this.meetingsService.findMeeting(user.userId, id);
+  }
+
+  @ResolveField(() => Transcript)
+  async findMeetingTranscript(@Args('meetingId') meetingId: string) {
+    return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 
   @Mutation(() => Meeting)

@@ -1,5 +1,6 @@
 import { Field, GraphQLISODateTime, ID, ObjectType } from '@nestjs/graphql';
 import { MeetingStatus } from '../enums/meeting-status.enum';
+import { Transcript } from './transcript.entity';
 
 @ObjectType()
 export class Meeting {
@@ -17,6 +18,9 @@ export class Meeting {
 
   @Field(() => MeetingStatus)
   status!: MeetingStatus;
+
+  @Field(() => Transcript, { nullable: true })
+  transcript?: Transcript;
 
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;

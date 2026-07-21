@@ -3,7 +3,7 @@ import { AiService } from './ai.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { AIResults } from './entities/aiResults.entity';
-import { aiResultsDto } from './dto/aiResults.dto';
+import { aiResultsDto } from './dtos/aiResults.dto';
 
 @Resolver()
 export class AiResolver {

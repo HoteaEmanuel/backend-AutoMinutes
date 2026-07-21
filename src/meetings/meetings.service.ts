@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, QueryFilter, Types } from 'mongoose';
+import { Model, QueryFilter, StrictCondition, Types } from 'mongoose';
 import { Meeting, MeetingDocument } from './schemas/meetings.schema';
 import { CreateMeetingDto } from './dto/createMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
@@ -36,7 +36,7 @@ export class MeetingsService {
 
     if (or.length) filter.$or = or;
 
-    if (status && status.toLowerCase() !== 'all') filter.status = status;
+    if (status) filter.status = status;
 
     // Interval de filtrare dupa data
     if (scheduledFrom || scheduledTo) {
@@ -91,5 +91,11 @@ export class MeetingsService {
     await this.transcriptModel.deleteMany({ meetingId });
     // ! Update cu mai multe delete uri cand sunt mai multe colectii care referentiaza
     return meeting;
+  }
+
+  async findTranscriptByMeetingId(meetingId: string) {
+    const transcript = await this.transcriptModel.findOne({ meetingId });
+    if (!transcript) return new NotFoundException('No transcript found for this meeting');
+    return transcript;
   }
 }
