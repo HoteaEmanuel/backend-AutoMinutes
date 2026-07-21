@@ -1,14 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import {
-  IsBoolean,
-  IsDate,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-} from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
 import { MeetingStatus } from '../enums/meeting-status.enum';
 
 @InputType()
