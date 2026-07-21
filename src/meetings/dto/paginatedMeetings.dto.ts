@@ -17,7 +17,7 @@ export class PaginatedMeetingsDto {
   @Field({ nullable: true })
   @IsString()
   @IsOptional()
-  contentLike?: string;
+  search?: string;
 
   @Field(() => MeetingStatus, { nullable: true })
   @IsEnum(MeetingStatus)
