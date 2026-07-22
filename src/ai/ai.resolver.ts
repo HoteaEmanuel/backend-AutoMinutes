@@ -6,6 +6,7 @@ import { AIResults } from './entities/aiResults.entity';
 import { aiResultsDto } from './dtos/aiResults.dto';
 
 @Resolver()
+@UseGuards()
 export class AiResolver {
   constructor(private readonly aiService: AiService) {}
   @Mutation(() => AIResults)
