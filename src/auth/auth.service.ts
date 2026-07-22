@@ -124,8 +124,6 @@ export class AuthService {
       avatar: payload.picture,
     });
 
-    console.log('PAYLOAD: ', payload);
-
     const refreshToken = await this.createRefreshToken({ sub: user._id.toHexString() });
     return { refreshToken, user };
   }

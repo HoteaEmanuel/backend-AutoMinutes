@@ -93,10 +93,8 @@ export class AuthController {
     @Query('error') error: string,
     @Res() res: Response,
   ) {
-    console.log('BACK HERE');
     if (error || !code) throw new UnauthorizedException();
     const { refreshToken } = await this.authService.handleGoogleCallback(code);
-    console.log('REFRESH FROM GOOGLE', refreshToken);
     this.saveCookie(refreshToken, res);
     return res.redirect(`${process.env.FRONTEND_URL}/auth/oauth`);
   }
