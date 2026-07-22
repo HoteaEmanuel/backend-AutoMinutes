@@ -28,5 +28,34 @@ services:
       mongo:
         condition: service_healthy
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: autominutes-ollama
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ['CMD-SHELL', 'ollama list || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # One-off job: pulls the model into the shared volume, then exits.
+  # Runs every 'docker compose up', but ollama skips the download if it's already cached.
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: autominutes-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: ['ollama', 'pull', 'llama3.1']
+    restart: 'no'
+
 volumes:
   mongo-data:
+  ollama-data:
