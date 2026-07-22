@@ -1,32 +1,29 @@
-import { Type } from '@google/genai';
-
 export const generateResultsSchema = {
-  type: Type.OBJECT,
+  type: 'object',
   properties: {
-    summary: { type: Type.STRING },
-    detailedNotes: { type: Type.STRING, nullable: true },
+    summary: { type: 'string' },
+    detailedNotes: { type: ['string', 'null'] },
     decisions: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      nullable: true,
+      type: ['array', 'null'],
+      items: { type: 'string' },
     },
     actionItems: {
-      type: Type.ARRAY,
+      type: 'array',
       items: {
-        type: Type.OBJECT,
+        type: 'object',
         properties: {
-          description: { type: Type.STRING },
-          assignee: { type: Type.STRING, nullable: true },
-          deadline: { type: Type.STRING, nullable: true },
+          description: { type: 'string' },
+          assignee: { type: ['string', 'null'] },
+          deadline: { type: ['string', 'null'] },
           status: {
-            type: Type.STRING,
+            type: 'string',
             enum: ['OPEN', 'IN_PROGRESS', 'DONE', 'UNKNOWN'],
           },
         },
         required: ['description', 'status'],
       },
     },
-    followUpNotes: { type: Type.STRING, nullable: true },
+    followUpNotes: { type: ['string', 'null'] },
   },
   required: ['summary', 'actionItems'],
 };

@@ -1,14 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import {
-  IsBoolean,
-  IsDate,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-} from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
 import { MeetingStatus } from '../enums/meeting-status.enum';
 
 @InputType()
@@ -26,7 +17,7 @@ export class PaginatedMeetingsDto {
   @Field({ nullable: true })
   @IsString()
   @IsOptional()
-  contentLike?: string;
+  search?: string;
 
   @Field(() => MeetingStatus, { nullable: true })
   @IsEnum(MeetingStatus)

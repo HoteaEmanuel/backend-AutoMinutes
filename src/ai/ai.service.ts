@@ -1,7 +1,7 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
-import { aiResultsDto } from './dto/aiResults.dto';
+import { aiResultsDto } from './dtos/aiResults.dto';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
 
@@ -22,14 +22,20 @@ export interface GeneratedResults {
   followUpNotes: string | null;
 }
 
+interface OllamaChatResponse {
+  message?: {
+    content?: string;
+  };
+}
+
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private readonly client: GoogleGenAI;
+  private readonly baseUrl: string;
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.client = new GoogleGenAI({ apiKey: this.config.getOrThrow<string>('ai.apiKey') });
+    this.baseUrl = this.config.getOrThrow<string>('ai.baseUrl');
     this.model = this.config.getOrThrow<string>('ai.model');
   }
 
@@ -37,22 +43,28 @@ export class AiService {
     let responseText: string | undefined;
 
     try {
-      const response = await this.client.models.generateContent({
-        model: this.model,
-        contents: generateResultsPrompt(aiInput.transcript),
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: generateResultsSchema,
-        },
+      const response = await fetch(`${this.baseUrl}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [{ role: 'user', content: generateResultsPrompt(aiInput.transcript) }],
+          format: generateResultsSchema,
+          stream: false,
+        }),
       });
 
-      responseText = response.text;
+      if (!response.ok) {
+        throw new Error(`Ollama request failed with status ${response.status}`);
+      }
+
+      const data = (await response.json()) as OllamaChatResponse;
+      responseText = data.message?.content;
     } catch (error) {
-      this.logger.error('Gemini request failed', error instanceof Error ? error.stack : error);
+      this.logger.error('Ollama request failed', error instanceof Error ? error.stack : error);
       throw new BadGatewayException('AI processing failed. Please try again later.');
     }
 
-    console.log('RESPONSE TEXT:', responseText);
     if (!responseText) {
       throw new BadGatewayException('AI service returned an empty response.');
     }

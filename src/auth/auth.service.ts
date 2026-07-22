@@ -81,7 +81,7 @@ export class AuthService {
         sub: user._id.toHexString(),
         email: user.email,
       });
-
+      user.passwordHash = undefined;
       return {
         accessToken,
         refreshToken,
