@@ -20,6 +20,12 @@ export class MeetingsService {
     return await this.meetingModel.find({}).sort({ scheduledAt: -1 });
   }
 
+  async findAllUserMeetings(userId: string) {
+    return await this.meetingModel
+      .find({ owner: new Types.ObjectId(userId) })
+      .sort({ scheduledAt: -1 });
+  }
+
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
     const { pageNo, pageSize, search, scheduledFrom, scheduledTo, sortDateOrder, status } = input;
 
@@ -59,7 +65,7 @@ export class MeetingsService {
 
   async findMeeting(userId: string, meetingId: string) {
     const meeting = await this.meetingModel.findOne({
-      _id: meetingId,
+      _id: new Types.ObjectId(meetingId),
       owner: new Types.ObjectId(userId),
     });
     if (!meeting) throw new NotFoundException('Meeting was not found');

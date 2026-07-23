@@ -9,7 +9,7 @@ import { addAttendeeDto } from 'src/attendees/dtos/addAttendee.dto';
 import { ActionItemsService } from 'src/action-items/action-items.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
@@ -131,7 +131,7 @@ export class AiService {
 
     await this.aiResultsModel.create({
       summary: results.summary,
-      meetingId: aiInput.meetingId,
+      meetingId: new Types.ObjectId(aiInput.meetingId),
       decisions: results.decisions ?? undefined,
       followUpNotes: results.followUpNotes ?? undefined,
       detailedNotes: results.detailedNotes ?? undefined,
@@ -141,7 +141,9 @@ export class AiService {
   }
 
   async findAIMeetingResults(meetingId: string) {
-    const aiResults = await this.aiResultsModel.findOne({ meetingId: meetingId });
+    const aiResults = await this.aiResultsModel.findOne({
+      meetingId: new Types.ObjectId(meetingId),
+    });
     return aiResults;
   }
 }

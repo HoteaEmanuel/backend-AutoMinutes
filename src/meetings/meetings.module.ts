@@ -21,5 +21,6 @@ import { Transcript, TranscriptSchema } from './schemas/transcript.schema';
     ]),
     AuthModule,
   ],
+  exports: [MeetingsService],
 })
 export class MeetingsModule {}

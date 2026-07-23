@@ -23,7 +23,7 @@ export class AiResolver {
     return this.aiService.processAIResults(aiInput);
   }
 
-  @Query(() => AIResults)
+  @Query(() => AIResults, { nullable: true })
   getAIResults(@Args('meetingId') meetingId: string) {
     return this.aiService.findAIMeetingResults(meetingId);
   }

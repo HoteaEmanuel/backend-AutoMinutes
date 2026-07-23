@@ -11,6 +11,9 @@ import { UpdateActionItemDto } from './dtos/updateActionItem.dto';
 import { Attendee } from 'src/attendees/entities/attendee.entity';
 import { AttendeesService } from 'src/attendees/attendees.service';
 import { Types } from 'mongoose';
+import { ActionItemsFilterDto } from './dtos/actionItemsFilter.dto';
+import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
+import type { AuthenticatedUser } from 'src/types/express';
 
 @Resolver(() => Meeting)
 @UseGuards(AuthGuard)
@@ -24,6 +27,19 @@ export class ActionItemsResolver {
   @ResolveField(() => [ActionItem])
   actionItems(@Parent() meeting: Meeting) {
     return this.actionItemsService.findActionItemsByMeetingId(meeting.id);
+  }
+
+  @Query(() => [ActionItem])
+  getUserActionItems(
+    @Args('filter', { nullable: true }) filter: ActionItemsFilterDto = {},
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.actionItemsService.findUserActionItems(user.userId, filter);
+  }
+
+  @Query(() => [Attendee])
+  getUserActionItemAssignees(@CurrentUser() user: AuthenticatedUser) {
+    return this.actionItemsService.findDistinctAssignees(user.userId);
   }
 
   @Mutation(() => ActionItem)

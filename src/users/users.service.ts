@@ -1,7 +1,7 @@
 import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 @Injectable()
@@ -30,7 +30,7 @@ export class UsersService {
   }
 
   async findById(_id: string) {
-    const user = await this.userModel.findOne({ _id });
+    const user = await this.userModel.findOne({ _id: new Types.ObjectId(_id) });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
