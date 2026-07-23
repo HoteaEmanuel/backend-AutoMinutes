@@ -28,6 +28,12 @@ export class MeetingsResolver {
     return await this.meetingsService.findUserMeetings(user.userId, paginatedInput);
   }
 
+  @Query(() => [Meeting])
+  @UseGuards(AuthGuard)
+  async getUserMeetings(@CurrentUser() user: AuthenticatedUser) {
+    return await this.meetingsService.findAllUserMeetings(user.userId);
+  }
+
   @Query(() => Meeting)
   @UseGuards(AuthGuard)
   async findMeeting(@Args('id') id: string, @CurrentUser() user: AuthenticatedUser) {

@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ActionItem, ActionItemSchema } from './schemas/actionItem.schema';
 import { AttendeesModule } from 'src/attendees/attendees.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { MeetingsModule } from 'src/meetings/meetings.module';
 
 @Module({
   providers: [ActionItemsResolver, ActionItemFieldsResolver, ActionItemsService],
@@ -16,6 +17,7 @@ import { AuthModule } from 'src/auth/auth.module';
       },
     ]),
     AttendeesModule,
+    MeetingsModule,
     AuthModule,
   ],
   exports: [ActionItemsService],

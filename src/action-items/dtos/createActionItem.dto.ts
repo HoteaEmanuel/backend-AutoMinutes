@@ -17,6 +17,7 @@ export class CreateActionItemDto {
   meetingId!: string;
 
   @Field({ nullable: true })
+  @IsOptional()
   @IsDate()
   deadline?: Date;
 

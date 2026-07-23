@@ -30,6 +30,12 @@ enum ActionItemStatus {
   UNKNOWN
 }
 
+input ActionItemsFilterDto {
+  assigneeId: String
+  meetingId: String
+  search: String
+}
+
 type Attendee {
   aiGenerated: Boolean!
   email: String
@@ -125,10 +131,13 @@ type Query {
   findById(attendeeId: String!): Attendee!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
-  getAIResults(meetingId: String!): AIResults!
+  getAIResults(meetingId: String!): AIResults
   getActionItems(meetingId: String!): [ActionItem!]!
   getAttendees(meetingId: String!): [Attendee!]!
   getTranscript(meetingId: String!): Transcript
+  getUserActionItemAssignees: [Attendee!]!
+  getUserActionItems(filter: ActionItemsFilterDto): [ActionItem!]!
+  getUserMeetings: [Meeting!]!
 }
 
 type Transcript {
