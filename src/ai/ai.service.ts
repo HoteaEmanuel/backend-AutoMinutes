@@ -142,7 +142,6 @@ export class AiService {
 
   async findAIMeetingResults(meetingId: string) {
     const aiResults = await this.aiResultsModel.findOne({ meetingId: meetingId });
-    if (!aiResults) throw new NotFoundException('No AI results found for this meeting');
     return aiResults;
   }
 }

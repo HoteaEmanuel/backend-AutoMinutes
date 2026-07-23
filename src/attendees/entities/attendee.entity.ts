@@ -4,6 +4,9 @@ import { AttendeeRole } from '../enums/attendeeRole.enum';
 
 @ObjectType()
 export class Attendee {
+  @Field(() => ID)
+  id!: string;
+
   @Field()
   name!: string;
 
