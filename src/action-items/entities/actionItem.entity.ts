@@ -21,4 +21,7 @@ export class ActionItem {
 
   @Field(() => Attendee, { nullable: true })
   assignee?: Attendee;
+
+  @Field({ defaultValue: false })
+  aiGenerated?: boolean;
 }

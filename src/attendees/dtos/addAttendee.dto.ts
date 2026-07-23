@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { AttendeeRole } from '../enums/attendeeRole.enum';
 
 @InputType()
@@ -26,4 +26,9 @@ export class addAttendeeDto {
   @IsOptional()
   @IsString()
   userId?: string;
+
+  @Field({ nullable: true, defaultValue: false })
+  @IsOptional()
+  @IsBoolean()
+  aiGenerated?: boolean;
 }

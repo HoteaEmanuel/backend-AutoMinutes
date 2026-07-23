@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsDate, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class CreateActionItemDto {
@@ -24,4 +24,8 @@ export class CreateActionItemDto {
   @IsString()
   @IsOptional()
   assigneeId?: string;
+
+  @Field()
+  @IsBoolean()
+  aiGenerated!: boolean;
 }
