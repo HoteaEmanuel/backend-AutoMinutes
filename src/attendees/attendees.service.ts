@@ -58,4 +58,10 @@ export class AttendeesService {
   async findAttendeesByIds(attendeeIds: Types.ObjectId[]) {
     return await this.attendeeModel.find({ _id: { $in: attendeeIds } });
   }
+
+  async findAttendeeById(attendeeId: string) {
+    const attendee = await this.attendeeModel.findById(attendeeId);
+    if (!attendee) throw new NotFoundException('Attendee not found');
+    return attendee;
+  }
 }

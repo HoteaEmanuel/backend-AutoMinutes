@@ -91,6 +91,28 @@ export class ActionItemsService {
     return actionItem;
   }
 
+  async updateActionItem(updateActionItemDto: UpdateActionItemDto) {
+    const { meetingId, actionItemId, title, description, deadline, status, assigneeId } =
+      updateActionItemDto;
+
+    const actionItem = await this.actionItemModel.findOne({
+      meetingId,
+      _id: actionItemId,
+    });
+    if (!actionItem) throw new NotFoundException('Action item not found');
+
+    if (title !== undefined) actionItem.title = title;
+    if (description !== undefined) actionItem.description = description;
+    if (deadline !== undefined) actionItem.deadline = deadline;
+    if (status !== undefined) actionItem.status = status;
+    if (assigneeId !== undefined) {
+      actionItem.assigneeId = assigneeId ? new Types.ObjectId(assigneeId) : undefined;
+    }
+
+    await actionItem.save();
+    return actionItem;
+  }
+
   async deleteActionItem(deleteActionItemDto: DeleteActionItemDto) {
     const actionItem = await this.actionItemModel.findOne({
       meetingId: new Types.ObjectId(deleteActionItemDto.meetingId),
