@@ -4,6 +4,7 @@
 
 type AIResults {
   actionItems: [ActionItem!]!
+  attendees: [Attendee!]!
   decisions: [String!]
   detailedNotes: String
   followUpNotes: String
@@ -12,7 +13,7 @@ type AIResults {
 }
 
 type ActionItem {
-  assignee: User
+  assignee: Attendee
   deadline: DateTime
   description: String
   meetingId: ID!
@@ -27,6 +28,29 @@ enum ActionItemStatus {
   UNKNOWN
 }
 
+type Attendee {
+  aiGenerated: Boolean!
+  email: String
+  meetingId: ID!
+  name: String!
+  role: AttendeeRole!
+  userId: ID
+}
+
+enum AttendeeRole {
+  ORGANIZER
+  PARTICIPANT
+  UNKNOWN
+}
+
+input CreateActionItemDto {
+  assigneeId: String
+  deadline: DateTime
+  description: String
+  meetingId: String!
+  title: String!
+}
+
 input CreateMeetingDto {
   description: String
   scheduledAt: DateTime!
@@ -39,7 +63,13 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input DeleteActionItemDto {
+  actionItemId: String!
+  meetingId: String!
+}
+
 type Meeting {
+  actionItems: [ActionItem!]!
   createdAt: DateTime!
   description: String
   findMeetingTranscript(meetingId: String!): Transcript!
@@ -59,7 +89,11 @@ enum MeetingStatus {
 }
 
 type Mutation {
+  addAttendee(addAttendeeDto: addAttendeeDto!): Attendee!
   createMeeting(createMeetingInput: CreateMeetingDto!): Meeting!
+  createNewActionItem(createActionItem: CreateActionItemDto!): ActionItem!
+  deleteActionItem(deleteActionItemDto: DeleteActionItemDto!): ActionItem!
+  deleteAttendee(deleteAttendeeDto: deleteAttendeeDto!): Attendee!
   deleteMeeting(id: String!): Meeting!
   generateAIResults(aiInput: aiResultsDto!): AIResults!
 }
@@ -85,6 +119,8 @@ type Query {
   findAll: [Meeting!]!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
+  getActionItems(meetingId: String!): [ActionItem!]!
+  getAttendees(meetingId: String!): [Attendee!]!
 }
 
 type Transcript {
@@ -93,15 +129,19 @@ type Transcript {
   meetingId: ID!
 }
 
-type User {
-  avatar: String
+input addAttendeeDto {
   email: String
-  firstName: String
-  lastName: String
-  provider: String
+  meetingId: String!
+  name: String!
+  role: AttendeeRole = PARTICIPANT
+  userId: String
 }
 
 input aiResultsDto {
   meetingId: String!
   transcript: String!
+}
+
+input deleteAttendeeDto {
+  attendeeId: String!
 }

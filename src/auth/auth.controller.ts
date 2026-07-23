@@ -15,8 +15,8 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { UsersService } from '@users/users.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
 import type { Response, Request } from 'express';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { type AuthenticatedUser } from 'src/types/express';

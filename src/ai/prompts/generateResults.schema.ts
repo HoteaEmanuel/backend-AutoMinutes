@@ -24,6 +24,21 @@ export const generateResultsSchema = {
       },
     },
     followUpNotes: { type: ['string', 'null'] },
+    attendees: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: ['string', 'null'] },
+          role: {
+            type: 'string',
+            enum: ['PARTICIPANT', 'ORGANIZER', 'UNKNOWN'],
+          },
+        },
+        required: ['name', 'role'],
+      },
+    },
   },
-  required: ['summary', 'actionItems'],
+  required: ['summary', 'actionItems', 'attendees'],
 };

@@ -5,8 +5,8 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
-import { CreateMeetingDto } from './dto/createMeeting.dto';
-import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
+import { CreateMeetingDto } from './dtos/createMeeting.dto';
+import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
 import { Transcript } from './entities/transcript.entity';
 

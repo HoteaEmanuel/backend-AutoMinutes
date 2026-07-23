@@ -2,7 +2,7 @@ import { ConflictException, HttpException, Injectable, NotFoundException } from 
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {

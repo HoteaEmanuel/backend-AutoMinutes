@@ -4,7 +4,7 @@ import { type ConfigType } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto } from './dtos/login.dto';
 import googleOauthConfig from './config/google-oauth.config';
 
 type tokenCreationProps = {

@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter, StrictCondition, Types } from 'mongoose';
 import { Meeting, MeetingDocument } from './schemas/meetings.schema';
-import { CreateMeetingDto } from './dto/createMeeting.dto';
+import { CreateMeetingDto } from './dtos/createMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
 import { TranscriptDocument } from './schemas/transcript.schema';
-import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
+import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
