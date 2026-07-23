@@ -86,13 +86,15 @@ export class MeetingsService {
   async deleteMeeting(userId: string, meetingId: string) {
     const meeting = await this.findMeeting(userId, meetingId);
     await meeting.deleteOne();
-    await this.transcriptModel.deleteMany({ meetingId });
+    await this.transcriptModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
     // ! Update cu mai multe delete uri cand sunt mai multe colectii care referentiaza
     return meeting;
   }
 
   async findTranscriptByMeetingId(meetingId: string) {
-    const transcript = await this.transcriptModel.findOne({ meetingId });
+    const transcript = await this.transcriptModel.findOne({
+      meetingId: new Types.ObjectId(meetingId),
+    });
     if (!transcript) return new NotFoundException('No transcript found for this meeting');
     return transcript;
   }
