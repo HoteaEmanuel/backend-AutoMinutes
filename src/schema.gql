@@ -13,6 +13,7 @@ type AIResults {
 }
 
 type ActionItem {
+  aiGenerated: Boolean!
   assignee: Attendee
   deadline: DateTime
   description: String
@@ -44,6 +45,7 @@ enum AttendeeRole {
 }
 
 input CreateActionItemDto {
+  aiGenerated: Boolean!
   assigneeId: String
   deadline: DateTime
   description: String
@@ -130,6 +132,7 @@ type Transcript {
 }
 
 input addAttendeeDto {
+  aiGenerated: Boolean = false
   email: String
   meetingId: String!
   name: String!

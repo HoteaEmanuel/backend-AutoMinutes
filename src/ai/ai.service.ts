@@ -7,6 +7,9 @@ import { AttendeeRole } from 'src/attendees/enums/attendeeRole.enum';
 import { AttendeesService } from 'src/attendees/attendees.service';
 import { addAttendeeDto } from 'src/attendees/dtos/addAttendee.dto';
 import { ActionItemsService } from 'src/action-items/action-items.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
+import { Model } from 'mongoose';
 
 export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
@@ -47,6 +50,7 @@ export class AiService {
 
   constructor(
     private readonly config: ConfigService,
+    @InjectModel(AIResults.name) private readonly aiResultsModel: Model<AIResultsDocument>,
     private readonly attendeesService: AttendeesService,
     private readonly actionItemsService: ActionItemsService,
   ) {
@@ -120,10 +124,18 @@ export class AiService {
           meetingId: aiInput.meetingId,
           deadline: actionItem.deadline ? new Date(actionItem.deadline) : undefined,
           assigneeId: matchedAttendee?._id?.toString(),
+          aiGenerated: true,
         });
       }),
     );
 
+    await this.aiResultsModel.create({
+      summary: results.summary,
+      meetingId: aiInput.meetingId,
+      decisions: results.decisions ?? undefined,
+      followUpNotes: results.followUpNotes ?? undefined,
+      detailedNotes: results.detailedNotes ?? undefined,
+    });
     console.log('AI RESULTS: ', results);
     return results;
   }

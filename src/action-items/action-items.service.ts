@@ -25,9 +25,9 @@ export class ActionItemsService {
   async deleteActionItem(deleteActionItemDto: DeleteActionItemDto) {
     const actionItem = await this.actionItemModel.findOne({
       meetingId: deleteActionItemDto.meetingId,
-      id: deleteActionItemDto.actionItemId,
+      _id: deleteActionItemDto.actionItemId,
     });
-    if (!actionItem) return new NotFoundException('Action item not found');
+    if (!actionItem) throw new NotFoundException('Action item not found');
     await actionItem.deleteOne();
     return actionItem;
   }

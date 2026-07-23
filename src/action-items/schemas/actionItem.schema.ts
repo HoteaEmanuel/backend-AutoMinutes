@@ -15,6 +15,9 @@ export class ActionItem {
   @Prop()
   deadline?: Date;
 
+  @Prop({ required: true, default: false })
+  aiGenerated!: boolean;
+
   @Prop({ required: true, default: ActionItemStatus.OPEN })
   status!: ActionItemStatus;
 
