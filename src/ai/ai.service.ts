@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
@@ -138,5 +138,11 @@ export class AiService {
     });
     console.log('AI RESULTS: ', results);
     return results;
+  }
+
+  async findAIMeetingResults(meetingId: string) {
+    const aiResults = await this.aiResultsModel.findOne({ meetingId: meetingId });
+    if (!aiResults) throw new NotFoundException('No AI results found for this meeting');
+    return aiResults;
   }
 }

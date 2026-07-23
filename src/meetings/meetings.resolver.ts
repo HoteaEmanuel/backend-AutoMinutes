@@ -39,6 +39,11 @@ export class MeetingsResolver {
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 
+  @Query(() => Transcript)
+  async getTranscript(@Args('meetingId') meetingId: string) {
+    return await this.meetingsService.findTranscriptByMeetingId(meetingId);
+  }
+
   @Mutation(() => Meeting)
   @UseGuards(AuthGuard)
   async createMeeting(

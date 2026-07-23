@@ -121,8 +121,10 @@ type Query {
   findAll: [Meeting!]!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
+  getAIResults(meetingId: String!): AIResults!
   getActionItems(meetingId: String!): [ActionItem!]!
   getAttendees(meetingId: String!): [Attendee!]!
+  getTranscript(meetingId: String!): Transcript!
 }
 
 type Transcript {
