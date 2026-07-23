@@ -17,6 +17,7 @@ type ActionItem {
   assignee: Attendee
   deadline: DateTime
   description: String
+  id: ID!
   meetingId: ID!
   status: ActionItemStatus!
   title: String!
@@ -32,6 +33,7 @@ enum ActionItemStatus {
 type Attendee {
   aiGenerated: Boolean!
   email: String
+  id: ID!
   meetingId: ID!
   name: String!
   role: AttendeeRole!
@@ -98,6 +100,7 @@ type Mutation {
   deleteAttendee(deleteAttendeeDto: deleteAttendeeDto!): Attendee!
   deleteMeeting(id: String!): Meeting!
   generateAIResults(aiInput: aiResultsDto!): AIResults!
+  updateActionItem(updateActionItemDto: UpdateActionItemDto!): ActionItem!
 }
 
 type PaginatedMeetings {
@@ -119,6 +122,7 @@ input PaginatedMeetingsDto {
 
 type Query {
   findAll: [Meeting!]!
+  findById(attendeeId: String!): Attendee!
   findMeeting(id: String!): Meeting!
   findUserMeetings(input: PaginatedMeetingsDto!): PaginatedMeetings!
   getAIResults(meetingId: String!): AIResults!
@@ -131,6 +135,16 @@ type Transcript {
   content: String!
   id: ID!
   meetingId: ID!
+}
+
+input UpdateActionItemDto {
+  actionItemId: String!
+  assigneeId: String
+  deadline: DateTime
+  description: String
+  meetingId: String!
+  status: ActionItemStatus
+  title: String
 }
 
 input addAttendeeDto {

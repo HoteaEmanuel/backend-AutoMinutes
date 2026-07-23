@@ -4,6 +4,9 @@ import { Attendee } from 'src/attendees/entities/attendee.entity';
 
 @ObjectType()
 export class ActionItem {
+  @Field(() => ID)
+  id!: string;
+
   @Field()
   title!: string;
 

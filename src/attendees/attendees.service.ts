@@ -1,5 +1,5 @@
 import { deleteAttendeeDto } from './dtos/deleteAttendee.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { addAttendeeDto } from './dtos/addAttendee.dto';
 import { Attendee, type AttendeeDocument } from './schemas/attendee.schema';
 import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
@@ -41,5 +41,11 @@ export class AttendeesService {
 
   async findMeetingAttendees(meetingId: string) {
     return await this.attendeeModel.find({ meetingId });
+  }
+
+  async findAttendeeById(attendeeId: string) {
+    const attendee = await this.attendeeModel.findById(attendeeId);
+    if (!attendee) throw new NotFoundException('Attendee not found');
+    return attendee;
   }
 }

@@ -1,3 +1,4 @@
+import { PaginatedMeetings } from './../meetings/entities/paginatedMeetings.entity';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AttendeesService } from './attendees.service';
 import { UseGuards } from '@nestjs/common';
@@ -24,5 +25,10 @@ export class AttendeesResolver {
   @Query(() => [Attendee])
   getAttendees(@Args('meetingId') meetingId: string) {
     return this.attendeesService.findMeetingAttendees(meetingId);
+  }
+
+  @Query(() => Attendee)
+  findById(@Args('attendeeId') attendeeId: string) {
+    return this.attendeesService.findAttendeeById(attendeeId);
   }
 }
