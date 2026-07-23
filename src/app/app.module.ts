@@ -16,6 +16,7 @@ import { join } from 'path';
 import type { Request, Response } from 'express';
 import { LoggerMiddleware } from 'src/middlewares/logger';
 import { AiModule } from 'src/ai/ai.module';
+import { AttendeesModule } from 'src/attendees/attendees.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AiModule } from 'src/ai/ai.module';
     AuthModule,
     MeetingsModule,
     AiModule,
+    AttendeesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

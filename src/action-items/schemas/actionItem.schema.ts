@@ -9,8 +9,8 @@ export class ActionItem {
   title!: string;
   @Prop()
   description?: string;
-  @Prop({ ref: 'User', index: true, type: Types.ObjectId })
-  assignee?: Types.ObjectId;
+  @Prop({ ref: 'Attendee', index: true, type: Types.ObjectId })
+  assigneeId?: Types.ObjectId;
 
   @Prop()
   deadline?: Date;
