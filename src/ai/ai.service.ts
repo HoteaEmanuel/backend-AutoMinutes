@@ -110,7 +110,9 @@ export class AiService {
     await Promise.all(
       results.actionItems.map((actionItem) => {
         const matchedAttendee = actionItem.assignee
-          ? attendees.find((attendee) => normalize(attendee.name) === normalize(actionItem.assignee!))
+          ? attendees.find(
+              (attendee) => normalize(attendee.name) === normalize(actionItem.assignee!),
+            )
           : undefined;
 
         return this.actionItemsService.createActionItem({
