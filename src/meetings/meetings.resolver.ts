@@ -34,12 +34,12 @@ export class MeetingsResolver {
     return await this.meetingsService.findMeeting(user.userId, id);
   }
 
-  @ResolveField(() => Transcript)
+  @ResolveField(() => Transcript, { nullable: true })
   async findMeetingTranscript(@Args('meetingId') meetingId: string) {
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 
-  @Query(() => Transcript)
+  @Query(() => Transcript, { nullable: true })
   async getTranscript(@Args('meetingId') meetingId: string) {
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }

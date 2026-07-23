@@ -95,7 +95,6 @@ export class MeetingsService {
     const transcript = await this.transcriptModel.findOne({
       meetingId: new Types.ObjectId(meetingId),
     });
-    if (!transcript) return new NotFoundException('No transcript found for this meeting');
     return transcript;
   }
 }
