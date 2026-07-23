@@ -74,7 +74,7 @@ type Meeting {
   actionItems: [ActionItem!]!
   createdAt: DateTime!
   description: String
-  findMeetingTranscript(meetingId: String!): Transcript!
+  findMeetingTranscript(meetingId: String!): Transcript
   id: ID!
   scheduledAt: DateTime!
   status: MeetingStatus!
@@ -124,7 +124,7 @@ type Query {
   getAIResults(meetingId: String!): AIResults!
   getActionItems(meetingId: String!): [ActionItem!]!
   getAttendees(meetingId: String!): [Attendee!]!
-  getTranscript(meetingId: String!): Transcript!
+  getTranscript(meetingId: String!): Transcript
 }
 
 type Transcript {
