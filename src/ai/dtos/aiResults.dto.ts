@@ -5,9 +5,5 @@ import { IsString } from 'class-validator';
 export class aiResultsDto {
   @Field()
   @IsString()
-  transcript!: string;
-
-  @Field()
-  @IsString()
   meetingId!: string;
 }

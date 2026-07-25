@@ -6,6 +6,7 @@ import { CreateMeetingDto } from './dtos/createMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
 import { TranscriptDocument } from './schemas/transcript.schema';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
+import { UploadTranscriptDto } from './dtos/uploadTranscript.dto';
 import { MeetingStatus } from './enums/meeting-status.enum';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -105,6 +106,18 @@ export class MeetingsService {
     return transcript;
   }
 
+  async setTranscript(userId: string, uploadTranscriptDto: UploadTranscriptDto) {
+    const { meetingId, content } = uploadTranscriptDto;
+    await this.findMeeting(userId, meetingId);
+
+    await this.transcriptModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
+
+    return await this.transcriptModel.create({
+      content,
+      meetingId: new Types.ObjectId(meetingId),
+    });
+  }
+
   async deleteAllUserMeetings(userId: string) {
     const meetings = await this.meetingModel.find(
       { owner: new Types.ObjectId(userId) },
@@ -117,9 +130,6 @@ export class MeetingsService {
   }
 
   async updateStatus(meetingId: string, status: MeetingStatus) {
-    await this.meetingModel.updateOne(
-      { _id: new Types.ObjectId(meetingId) },
-      { $set: { status } },
-    );
+    await this.meetingModel.updateOne({ _id: new Types.ObjectId(meetingId) }, { $set: { status } });
   }
 }

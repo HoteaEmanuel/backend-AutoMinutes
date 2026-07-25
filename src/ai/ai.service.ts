@@ -1,4 +1,9 @@
-import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
@@ -7,6 +12,7 @@ import { AttendeeRole } from 'src/attendees/enums/attendeeRole.enum';
 import { AttendeesService } from 'src/attendees/attendees.service';
 import { addAttendeeDto } from 'src/attendees/dtos/addAttendee.dto';
 import { ActionItemsService } from 'src/action-items/action-items.service';
+import { ActionItemStatus as ActionItemStatusEnum } from 'src/action-items/enums/actionItemsStatus';
 import { InjectModel } from '@nestjs/mongoose';
 import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
 import { Model, Types } from 'mongoose';
@@ -45,6 +51,13 @@ interface OllamaChatResponse {
   };
 }
 
+const actionItemStatusMap: Record<ActionItemStatus, ActionItemStatusEnum> = {
+  OPEN: ActionItemStatusEnum.OPEN,
+  IN_PROGRESS: ActionItemStatusEnum.IN_PROGRESS,
+  DONE: ActionItemStatusEnum.DONE,
+  UNKNOWN: ActionItemStatusEnum.UNKNOWN,
+};
+
 @Injectable()
 export class AiService {
   private readonly baseUrl: string;
@@ -61,11 +74,21 @@ export class AiService {
     this.model = this.config.getOrThrow<string>('ai.model');
   }
 
-  async processAIResults(aiInput: aiResultsDto) {
+  async processAIResults(userId: string, aiInput: aiResultsDto) {
+    const meeting = await this.meetingsService.findMeeting(userId, aiInput.meetingId);
+
+    if (meeting.status === MeetingStatus.PROCESSING)
+      throw new ConflictException('AI results are already being generated for this meeting.');
+
+    const transcript = await this.meetingsService.findTranscriptByMeetingId(aiInput.meetingId);
+    if (!transcript?.content.trim())
+      throw new BadRequestException('This meeting has no transcript to process.');
+
+    await this.clearAiResults(aiInput.meetingId);
     await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.PROCESSING);
 
     try {
-      const results = await this.generateResults(aiInput);
+      const results = await this.generateResults(aiInput.meetingId, transcript.content);
       await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.COMPLETED);
       return results;
     } catch (error) {
@@ -74,7 +97,14 @@ export class AiService {
     }
   }
 
-  private async generateResults(aiInput: aiResultsDto): Promise<GeneratedResults> {
+  private async clearAiResults(meetingId: string) {
+    const keepIds = await this.actionItemsService.findManualAssigneeIds(meetingId);
+    await this.actionItemsService.deleteAiGeneratedByMeetingId(meetingId);
+    await this.attendeesService.deleteAiGeneratedByMeetingId(meetingId, keepIds);
+    await this.aiResultsModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
+  }
+
+  private async generateResults(meetingId: string, transcript: string) {
     let responseText: string | undefined;
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
@@ -82,7 +112,7 @@ export class AiService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: this.model,
-          messages: [{ role: 'user', content: generateResultsPrompt(aiInput.transcript) }],
+          messages: [{ role: 'user', content: generateResultsPrompt(transcript) }],
           format: generateResultsSchema,
           stream: false,
         }),
@@ -94,7 +124,7 @@ export class AiService {
 
       const data = (await response.json()) as OllamaChatResponse;
       responseText = data.message?.content;
-    } catch (_error) {
+    } catch {
       throw new BadGatewayException('AI processing failed. Please try again later.');
     }
 
@@ -112,7 +142,7 @@ export class AiService {
         attendees: parsed.attendees.map((attendee) => ({
           ...attendee,
           aiGenerated: true,
-          meetingId: aiInput.meetingId,
+          meetingId,
         })),
       };
     } catch {
@@ -120,9 +150,7 @@ export class AiService {
     }
 
     const attendees = await Promise.all(
-      results.attendees.map((attendee) =>
-        this.attendeesService.createAttendee(attendee as addAttendeeDto),
-      ),
+      results.attendees.map((attendee) => this.upsertAttendee(meetingId, attendee)),
     );
 
     const normalize = (value: string) => value.trim().toLowerCase();
@@ -137,26 +165,39 @@ export class AiService {
 
         return this.actionItemsService.createActionItem({
           title: actionItem.description,
-          meetingId: aiInput.meetingId,
+          meetingId,
           deadline: actionItem.deadline ? new Date(actionItem.deadline) : undefined,
           assigneeId: matchedAttendee?._id?.toString(),
+          status: actionItemStatusMap[actionItem.status],
           aiGenerated: true,
         });
       }),
     );
 
-    await this.aiResultsModel.create({
+    return await this.aiResultsModel.create({
       summary: results.summary,
-      meetingId: new Types.ObjectId(aiInput.meetingId),
+      meetingId: new Types.ObjectId(meetingId),
       decisions: results.decisions ?? undefined,
       followUpNotes: results.followUpNotes ?? undefined,
       detailedNotes: results.detailedNotes ?? undefined,
     });
-    console.log('AI RESULTS: ', results);
-    return results;
   }
 
-  async findAIMeetingResults(meetingId: string) {
+  private async upsertAttendee(meetingId: string, attendee: GeneratedAttendee) {
+    if (attendee.email) {
+      const existingAttendee = await this.attendeesService.findAttendeeByEmail(
+        meetingId,
+        attendee.email,
+      );
+      if (existingAttendee) return existingAttendee;
+    }
+
+    return await this.attendeesService.createAttendee(attendee as addAttendeeDto);
+  }
+
+  async findAIMeetingResults(userId: string, meetingId: string) {
+    await this.meetingsService.findMeeting(userId, meetingId);
+
     const aiResults = await this.aiResultsModel.findOne({
       meetingId: new Types.ObjectId(meetingId),
     });

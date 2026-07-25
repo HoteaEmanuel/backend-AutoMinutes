@@ -59,6 +59,21 @@ export class AttendeesService {
     return await this.attendeeModel.find({ _id: { $in: attendeeIds } });
   }
 
+  async findAttendeeByEmail(meetingId: string, email: string) {
+    return await this.attendeeModel.findOne({
+      email,
+      meetingId: new Types.ObjectId(meetingId),
+    });
+  }
+
+  async deleteAiGeneratedByMeetingId(meetingId: string, keepIds: Types.ObjectId[]) {
+    await this.attendeeModel.deleteMany({
+      meetingId: new Types.ObjectId(meetingId),
+      aiGenerated: true,
+      _id: { $nin: keepIds },
+    });
+  }
+
   async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {
     await this.attendeeModel.deleteMany({ meetingId: { $in: meetingIds } });
   }

@@ -7,6 +7,7 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
 import { CreateMeetingDto } from './dtos/createMeeting.dto';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
+import { UploadTranscriptDto } from './dtos/uploadTranscript.dto';
 import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
 import { Transcript } from './entities/transcript.entity';
 
@@ -63,5 +64,14 @@ export class MeetingsResolver {
   @UseGuards(AuthGuard)
   async deleteMeeting(@Args('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return await this.meetingsService.deleteMeeting(user.userId, id);
+  }
+
+  @Mutation(() => Transcript)
+  @UseGuards(AuthGuard)
+  async uploadTranscript(
+    @Args('uploadTranscriptDto') uploadTranscriptDto: UploadTranscriptDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.meetingsService.setTranscript(user.userId, uploadTranscriptDto);
   }
 }

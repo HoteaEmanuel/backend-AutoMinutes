@@ -8,6 +8,8 @@ import { ActionItem } from 'src/action-items/entities/actionItem.entity';
 import { ActionItemsService } from 'src/action-items/action-items.service';
 import { Attendee } from 'src/attendees/entities/attendee.entity';
 import { AttendeesService } from 'src/attendees/attendees.service';
+import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
+import type { AuthenticatedUser } from 'src/types/express';
 
 @Resolver(() => AIResults)
 @UseGuards(AuthGuard)
@@ -18,14 +20,16 @@ export class AiResolver {
     private readonly attendeesService: AttendeesService,
   ) {}
   @Mutation(() => AIResults)
-  @UseGuards(AuthGuard)
-  generateAIResults(@Args('aiInput') aiInput: aiResultsDto) {
-    return this.aiService.processAIResults(aiInput);
+  generateAIResults(
+    @Args('aiInput') aiInput: aiResultsDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.aiService.processAIResults(user.userId, aiInput);
   }
 
   @Query(() => AIResults, { nullable: true })
-  getAIResults(@Args('meetingId') meetingId: string) {
-    return this.aiService.findAIMeetingResults(meetingId);
+  getAIResults(@Args('meetingId') meetingId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.aiService.findAIMeetingResults(user.userId, meetingId);
   }
 
   @ResolveField(() => [ActionItem])

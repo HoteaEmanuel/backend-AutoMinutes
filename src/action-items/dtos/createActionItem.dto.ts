@@ -1,5 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import { ActionItemStatus } from '../enums/actionItemsStatus';
 
 @InputType()
 export class CreateActionItemDto {
@@ -25,6 +26,11 @@ export class CreateActionItemDto {
   @IsString()
   @IsOptional()
   assigneeId?: string;
+
+  @Field(() => ActionItemStatus, { nullable: true })
+  @IsOptional()
+  @IsEnum(ActionItemStatus)
+  status?: ActionItemStatus;
 
   @Field()
   @IsBoolean()

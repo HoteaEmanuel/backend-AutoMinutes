@@ -101,6 +101,21 @@ export class ActionItemsService {
     return actionItem;
   }
 
+  async findManualAssigneeIds(meetingId: string) {
+    return await this.actionItemModel.distinct('assigneeId', {
+      meetingId: new Types.ObjectId(meetingId),
+      aiGenerated: false,
+      assigneeId: { $ne: null },
+    });
+  }
+
+  async deleteAiGeneratedByMeetingId(meetingId: string) {
+    await this.actionItemModel.deleteMany({
+      meetingId: new Types.ObjectId(meetingId),
+      aiGenerated: true,
+    });
+  }
+
   async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {
     await this.actionItemModel.deleteMany({ meetingId: { $in: meetingIds } });
   }
