@@ -19,7 +19,14 @@ Respond with ONLY a single valid JSON object. Do not include markdown code fence
       "status": "OPEN" | "IN_PROGRESS" | "DONE" | "UNKNOWN"
     }
   ],
-  "followUpNotes": string | null
+  "followUpNotes": string | null,
+  "attendees": [
+    {
+      "name": string,
+      "email": string | null,
+      "role": "PARTICIPANT" | "ORGANIZER" | "UNKNOWN"
+    }
+  ]
 }
 
 FIELD RULES
@@ -32,6 +39,10 @@ FIELD RULES
   - deadline: The due date in ISO 8601 format (YYYY-MM-DD). Use null if no deadline was mentioned. Never guess a date that is not stated or clearly implied (e.g. "by next Friday" relative to a date mentioned in the transcript is acceptable; vague terms like "soon" are not — use null instead).
   - status: One of "OPEN", "IN_PROGRESS", "DONE", "UNKNOWN". Use "DONE" only if the transcript states the task is already completed. Use "IN_PROGRESS" only if explicitly stated as underway. Use "UNKNOWN" if status cannot be reasonably inferred. Default to "OPEN" for newly assigned tasks with no other signal.
 - followUpNotes: Additional context, open questions, or next steps that don't fit as decisions or action items. Use null if not applicable.
+- attendees: An array of every distinct person who took part in or is mentioned as present in the meeting. Use an empty array if none can be identified.
+  - name: The person's name exactly as it appears in the transcript. Required.
+  - email: The person's email address only if explicitly stated in the transcript. Use null otherwise — never invent or guess an email.
+  - role: "ORGANIZER" if the transcript clearly shows the person led, scheduled, or ran the meeting. "PARTICIPANT" if they simply took part. "UNKNOWN" if the role cannot be clearly determined. Never assume ORGANIZER or PARTICIPANT without clear evidence — prefer "UNKNOWN".
 
 STRICT RULES
 - Base every field strictly on the content of the transcript. Do not hallucinate names, dates, or facts.

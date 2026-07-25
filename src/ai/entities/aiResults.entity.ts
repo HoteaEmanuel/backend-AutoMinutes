@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Types } from 'mongoose';
 import { ActionItem } from 'src/action-items/entities/actionItem.entity';
+import { Attendee } from 'src/attendees/entities/attendee.entity';
 
 @ObjectType()
 export class AIResults {
@@ -21,4 +22,7 @@ export class AIResults {
 
   @Field({ nullable: true })
   followUpNotes?: string;
+
+  @Field(() => [Attendee])
+  attendees!: Attendee[];
 }

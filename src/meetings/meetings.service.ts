@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter, StrictCondition, Types } from 'mongoose';
 import { Meeting, MeetingDocument } from './schemas/meetings.schema';
-import { CreateMeetingDto } from './dto/createMeeting.dto';
+import { CreateMeetingDto } from './dtos/createMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
 import { TranscriptDocument } from './schemas/transcript.schema';
-import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
+import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -18,6 +18,12 @@ export class MeetingsService {
 
   async findAll() {
     return await this.meetingModel.find({}).sort({ scheduledAt: -1 });
+  }
+
+  async findAllUserMeetings(userId: string) {
+    return await this.meetingModel
+      .find({ owner: new Types.ObjectId(userId) })
+      .sort({ scheduledAt: -1 });
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
@@ -59,7 +65,7 @@ export class MeetingsService {
 
   async findMeeting(userId: string, meetingId: string) {
     const meeting = await this.meetingModel.findOne({
-      _id: meetingId,
+      _id: new Types.ObjectId(meetingId),
       owner: new Types.ObjectId(userId),
     });
     if (!meeting) throw new NotFoundException('Meeting was not found');
@@ -86,14 +92,15 @@ export class MeetingsService {
   async deleteMeeting(userId: string, meetingId: string) {
     const meeting = await this.findMeeting(userId, meetingId);
     await meeting.deleteOne();
-    await this.transcriptModel.deleteMany({ meetingId });
+    await this.transcriptModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
     // ! Update cu mai multe delete uri cand sunt mai multe colectii care referentiaza
     return meeting;
   }
 
   async findTranscriptByMeetingId(meetingId: string) {
-    const transcript = await this.transcriptModel.findOne({ meetingId });
-    if (!transcript) return new NotFoundException('No transcript found for this meeting');
+    const transcript = await this.transcriptModel.findOne({
+      meetingId: new Types.ObjectId(meetingId),
+    });
     return transcript;
   }
 }

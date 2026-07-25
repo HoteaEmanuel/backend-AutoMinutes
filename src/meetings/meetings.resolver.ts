@@ -5,8 +5,8 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
-import { CreateMeetingDto } from './dto/createMeeting.dto';
-import { PaginatedMeetingsDto } from './dto/paginatedMeetings.dto';
+import { CreateMeetingDto } from './dtos/createMeeting.dto';
+import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
 import { Transcript } from './entities/transcript.entity';
 
@@ -28,14 +28,25 @@ export class MeetingsResolver {
     return await this.meetingsService.findUserMeetings(user.userId, paginatedInput);
   }
 
+  @Query(() => [Meeting])
+  @UseGuards(AuthGuard)
+  async getUserMeetings(@CurrentUser() user: AuthenticatedUser) {
+    return await this.meetingsService.findAllUserMeetings(user.userId);
+  }
+
   @Query(() => Meeting)
   @UseGuards(AuthGuard)
   async findMeeting(@Args('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return await this.meetingsService.findMeeting(user.userId, id);
   }
 
-  @ResolveField(() => Transcript)
+  @ResolveField(() => Transcript, { nullable: true })
   async findMeetingTranscript(@Args('meetingId') meetingId: string) {
+    return await this.meetingsService.findTranscriptByMeetingId(meetingId);
+  }
+
+  @Query(() => Transcript, { nullable: true })
+  async getTranscript(@Args('meetingId') meetingId: string) {
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 

@@ -15,8 +15,8 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { UsersService } from '@users/users.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
 import type { Response, Request } from 'express';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { type AuthenticatedUser } from 'src/types/express';
@@ -93,10 +93,8 @@ export class AuthController {
     @Query('error') error: string,
     @Res() res: Response,
   ) {
-    console.log('BACK HERE');
     if (error || !code) throw new UnauthorizedException();
     const { refreshToken } = await this.authService.handleGoogleCallback(code);
-    console.log('REFRESH FROM GOOGLE', refreshToken);
     this.saveCookie(refreshToken, res);
     return res.redirect(`${process.env.FRONTEND_URL}/auth/oauth`);
   }

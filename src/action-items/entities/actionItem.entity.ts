@@ -1,9 +1,12 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { User } from '@users/entities/user.entity';
 import { ActionItemStatus } from '../enums/actionItemsStatus';
+import { Attendee } from 'src/attendees/entities/attendee.entity';
 
 @ObjectType()
 export class ActionItem {
+  @Field(() => ID)
+  id!: string;
+
   @Field()
   title!: string;
 
@@ -19,6 +22,9 @@ export class ActionItem {
   @Field(() => ID)
   meetingId!: string;
 
-  @Field(() => User, { nullable: true })
-  assignee?: User;
+  @Field(() => Attendee, { nullable: true })
+  assignee?: Attendee;
+
+  @Field({ defaultValue: false })
+  aiGenerated?: boolean;
 }

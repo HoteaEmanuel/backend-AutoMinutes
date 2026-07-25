@@ -1,9 +1,15 @@
-import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenAI } from '@google/genai';
-import { aiResultsDto } from './dtos/aiResults.dto';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
+import { aiResultsDto } from './dtos/aiResults.dto';
+import { AttendeeRole } from 'src/attendees/enums/attendeeRole.enum';
+import { AttendeesService } from 'src/attendees/attendees.service';
+import { addAttendeeDto } from 'src/attendees/dtos/addAttendee.dto';
+import { ActionItemsService } from 'src/action-items/action-items.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
+import { Model, Types } from 'mongoose';
 
 export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
@@ -14,12 +20,21 @@ export interface GeneratedActionItem {
   status: ActionItemStatus;
 }
 
+export interface GeneratedAttendee {
+  name: string;
+  email: string | null;
+  role: AttendeeRole;
+  aiGenerated: true;
+  meetingId: string;
+}
+
 export interface GeneratedResults {
   summary: string;
   detailedNotes: string | null;
   decisions: string[] | null;
   actionItems: GeneratedActionItem[];
   followUpNotes: string | null;
+  attendees: GeneratedAttendee[];
 }
 
 interface OllamaChatResponse {
@@ -30,18 +45,21 @@ interface OllamaChatResponse {
 
 @Injectable()
 export class AiService {
-  private readonly logger = new Logger(AiService.name);
   private readonly baseUrl: string;
   private readonly model: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    @InjectModel(AIResults.name) private readonly aiResultsModel: Model<AIResultsDocument>,
+    private readonly attendeesService: AttendeesService,
+    private readonly actionItemsService: ActionItemsService,
+  ) {
     this.baseUrl = this.config.getOrThrow<string>('ai.baseUrl');
     this.model = this.config.getOrThrow<string>('ai.model');
   }
 
-  async processAIResults(aiInput: aiResultsDto): Promise<GeneratedResults> {
+  async processAIResults(aiInput: aiResultsDto) {
     let responseText: string | undefined;
-
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
@@ -60,8 +78,7 @@ export class AiService {
 
       const data = (await response.json()) as OllamaChatResponse;
       responseText = data.message?.content;
-    } catch (error) {
-      this.logger.error('Ollama request failed', error instanceof Error ? error.stack : error);
+    } catch (_error) {
       throw new BadGatewayException('AI processing failed. Please try again later.');
     }
 
@@ -69,11 +86,64 @@ export class AiService {
       throw new BadGatewayException('AI service returned an empty response.');
     }
 
+    let results: GeneratedResults;
     try {
-      return JSON.parse(responseText) as GeneratedResults;
+      const parsed = JSON.parse(responseText) as Omit<GeneratedResults, 'attendees'> & {
+        attendees: Omit<GeneratedAttendee, 'aiGenerated' | 'meetingId'>[];
+      };
+      results = {
+        ...parsed,
+        attendees: parsed.attendees.map((attendee) => ({
+          ...attendee,
+          aiGenerated: true,
+          meetingId: aiInput.meetingId,
+        })),
+      };
     } catch {
-      this.logger.error(`Failed to parse AI response as JSON: ${responseText}`);
       throw new BadGatewayException('AI service returned an invalid response.');
     }
+
+    const attendees = await Promise.all(
+      results.attendees.map((attendee) =>
+        this.attendeesService.createAttendee(attendee as addAttendeeDto),
+      ),
+    );
+
+    const normalize = (value: string) => value.trim().toLowerCase();
+
+    await Promise.all(
+      results.actionItems.map((actionItem) => {
+        const matchedAttendee = actionItem.assignee
+          ? attendees.find(
+              (attendee) => normalize(attendee.name) === normalize(actionItem.assignee!),
+            )
+          : undefined;
+
+        return this.actionItemsService.createActionItem({
+          title: actionItem.description,
+          meetingId: aiInput.meetingId,
+          deadline: actionItem.deadline ? new Date(actionItem.deadline) : undefined,
+          assigneeId: matchedAttendee?._id?.toString(),
+          aiGenerated: true,
+        });
+      }),
+    );
+
+    await this.aiResultsModel.create({
+      summary: results.summary,
+      meetingId: new Types.ObjectId(aiInput.meetingId),
+      decisions: results.decisions ?? undefined,
+      followUpNotes: results.followUpNotes ?? undefined,
+      detailedNotes: results.detailedNotes ?? undefined,
+    });
+    console.log('AI RESULTS: ', results);
+    return results;
+  }
+
+  async findAIMeetingResults(meetingId: string) {
+    const aiResults = await this.aiResultsModel.findOne({
+      meetingId: new Types.ObjectId(meetingId),
+    });
+    return aiResults;
   }
 }
