@@ -52,6 +52,11 @@ enum AttendeeRole {
   UNKNOWN
 }
 
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
 input CreateActionItemDto {
   aiGenerated: Boolean!
   assigneeId: String
@@ -66,6 +71,13 @@ input CreateMeetingDto {
   scheduledAt: DateTime!
   title: String!
   transcript: String
+}
+
+input CreateUserDto {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String!
 }
 
 """
@@ -100,13 +112,18 @@ enum MeetingStatus {
 
 type Mutation {
   addAttendee(addAttendeeDto: addAttendeeDto!): Attendee!
+  changePassword(input: ChangePasswordInput!): Boolean!
   createMeeting(createMeetingInput: CreateMeetingDto!): Meeting!
   createNewActionItem(createActionItem: CreateActionItemDto!): ActionItem!
+  createUser(createUserDto: CreateUserDto!): User!
+  deleteAccount: Boolean!
   deleteActionItem(deleteActionItemDto: DeleteActionItemDto!): ActionItem!
   deleteAttendee(deleteAttendeeDto: deleteAttendeeDto!): Attendee!
   deleteMeeting(id: String!): Meeting!
   generateAIResults(aiInput: aiResultsDto!): AIResults!
+  setPassword(input: SetPasswordInput!): Boolean!
   updateActionItem(updateActionItemDto: UpdateActionItemDto!): ActionItem!
+  updateProfile(input: UpdateProfileInput!): User!
 }
 
 type PaginatedMeetings {
@@ -126,6 +143,11 @@ input PaginatedMeetingsDto {
   status: MeetingStatus
 }
 
+enum Provider {
+  GOOGLE
+  LOCAL
+}
+
 type Query {
   findAll: [Meeting!]!
   findById(attendeeId: String!): Attendee!
@@ -138,6 +160,12 @@ type Query {
   getUserActionItemAssignees: [Attendee!]!
   getUserActionItems(filter: ActionItemsFilterDto): [ActionItem!]!
   getUserMeetings: [Meeting!]!
+  me: User!
+  users: [User!]!
+}
+
+input SetPasswordInput {
+  newPassword: String!
 }
 
 type Transcript {
@@ -154,6 +182,21 @@ input UpdateActionItemDto {
   meetingId: String!
   status: ActionItemStatus
   title: String
+}
+
+input UpdateProfileInput {
+  firstName: String
+  lastName: String
+}
+
+type User {
+  avatar: String
+  createdAt: DateTime!
+  email: String
+  firstName: String
+  id: ID!
+  lastName: String
+  provider: Provider
 }
 
 input addAttendeeDto {

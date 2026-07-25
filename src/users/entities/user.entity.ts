@@ -1,8 +1,11 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Provider } from '@users/enums/provider.enum';
 
 @ObjectType()
 export class User {
+  @Field(() => ID)
+  id!: string;
+
   @Field({ nullable: true })
   firstName?: string;
 
@@ -15,6 +18,9 @@ export class User {
   @Field({ nullable: true })
   avatar?: string;
 
-  @Field({ nullable: true })
+  @Field(() => Provider, { nullable: true })
   provider?: Provider;
+
+  @Field()
+  createdAt!: Date;
 }

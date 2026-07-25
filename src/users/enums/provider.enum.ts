@@ -6,5 +6,5 @@ export enum Provider {
 }
 
 registerEnumType(Provider, {
-  name: 'MeetingStatus',
+  name: 'Provider',
 });

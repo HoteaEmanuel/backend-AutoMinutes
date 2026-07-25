@@ -100,4 +100,8 @@ export class ActionItemsService {
     await actionItem.deleteOne();
     return actionItem;
   }
+
+  async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {
+    await this.actionItemModel.deleteMany({ meetingId: { $in: meetingIds } });
+  }
 }

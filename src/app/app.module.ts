@@ -7,6 +7,7 @@ import { DatabaseModule } from '@database/database.module';
 import jwtConfig from '@config/jwt.config';
 import dbConfig from '@config/db.config';
 import aiConfig from '@config/ai.config';
+import r2Config from '@config/r2.config';
 import { AuthModule } from 'src/auth/auth.module';
 import { MeetingsModule } from 'src/meetings/meetings.module';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -22,7 +23,7 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [jwtConfig, dbConfig, aiConfig],
+      load: [jwtConfig, dbConfig, aiConfig, r2Config],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
