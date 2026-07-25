@@ -58,4 +58,8 @@ export class AttendeesService {
   async findAttendeesByIds(attendeeIds: Types.ObjectId[]) {
     return await this.attendeeModel.find({ _id: { $in: attendeeIds } });
   }
+
+  async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {
+    await this.attendeeModel.deleteMany({ meetingId: { $in: meetingIds } });
+  }
 }

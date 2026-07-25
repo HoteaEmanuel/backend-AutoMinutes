@@ -1,4 +1,11 @@
-import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -31,6 +38,55 @@ export class UsersService {
 
   async findById(_id: string) {
     const user = await this.userModel.findOne({ _id: new Types.ObjectId(_id) });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async update(userId: string, update: Partial<Pick<User, 'firstName' | 'lastName' | 'avatar'>>) {
+    const user = await this.userModel.findByIdAndUpdate(new Types.ObjectId(userId), update, {
+      new: true,
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.userModel
+      .findOne({ _id: new Types.ObjectId(userId) })
+      .select('+passwordHash');
+    if (!user) throw new NotFoundException('User not found');
+
+    if (!user.passwordHash)
+      throw new BadRequestException(
+        'This account signed in with Google and has no password to change',
+      );
+
+    const passwordsMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!passwordsMatch) throw new UnauthorizedException('Current password is incorrect');
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+    return true;
+  }
+
+  async setPassword(userId: string, newPassword: string) {
+    const user = await this.userModel
+      .findOne({ _id: new Types.ObjectId(userId) })
+      .select('+passwordHash');
+    if (!user) throw new NotFoundException('User not found');
+
+    if (user.passwordHash)
+      throw new BadRequestException(
+        'This account already has a password. Use change password instead.',
+      );
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+    return true;
+  }
+
+  async remove(userId: string) {
+    const user = await this.userModel.findByIdAndDelete(new Types.ObjectId(userId));
     if (!user) throw new NotFoundException('User not found');
     return user;
   }

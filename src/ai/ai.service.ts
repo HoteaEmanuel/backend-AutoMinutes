@@ -10,6 +10,8 @@ import { ActionItemsService } from 'src/action-items/action-items.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
 import { Model, Types } from 'mongoose';
+import { MeetingsService } from 'src/meetings/meetings.service';
+import { MeetingStatus } from 'src/meetings/enums/meeting-status.enum';
 
 export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
@@ -53,12 +55,26 @@ export class AiService {
     @InjectModel(AIResults.name) private readonly aiResultsModel: Model<AIResultsDocument>,
     private readonly attendeesService: AttendeesService,
     private readonly actionItemsService: ActionItemsService,
+    private readonly meetingsService: MeetingsService,
   ) {
     this.baseUrl = this.config.getOrThrow<string>('ai.baseUrl');
     this.model = this.config.getOrThrow<string>('ai.model');
   }
 
   async processAIResults(aiInput: aiResultsDto) {
+    await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.PROCESSING);
+
+    try {
+      const results = await this.generateResults(aiInput);
+      await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.COMPLETED);
+      return results;
+    } catch (error) {
+      await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.FAILED);
+      throw error;
+    }
+  }
+
+  private async generateResults(aiInput: aiResultsDto): Promise<GeneratedResults> {
     let responseText: string | undefined;
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
@@ -145,5 +161,9 @@ export class AiService {
       meetingId: new Types.ObjectId(meetingId),
     });
     return aiResults;
+  }
+
+  async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {
+    await this.aiResultsModel.deleteMany({ meetingId: { $in: meetingIds } });
   }
 }

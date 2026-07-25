@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AIResults, AIResultsSchema } from './schemas/aiResults.schema';
 import { AttendeesModule } from 'src/attendees/attendees.module';
 import { ActionItemsModule } from 'src/action-items/action-items.module';
+import { MeetingsModule } from 'src/meetings/meetings.module';
 
 @Module({
   providers: [AiResolver, AiService],
@@ -19,6 +20,8 @@ import { ActionItemsModule } from 'src/action-items/action-items.module';
     ]),
     AttendeesModule,
     ActionItemsModule,
+    MeetingsModule,
   ],
+  exports: [AiService],
 })
 export class AiModule {}
