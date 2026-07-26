@@ -1,4 +1,5 @@
 import { deleteAttendeeDto } from './dtos/deleteAttendee.dto';
+import { updateAttendeeDto } from './dtos/updateAttendee.dto';
 import { Model, Types } from 'mongoose';
 import { addAttendeeDto } from './dtos/addAttendee.dto';
 import { Attendee, type AttendeeDocument } from './schemas/attendee.schema';
@@ -38,6 +39,30 @@ export class AttendeesService {
       if (error instanceof HttpException) throw error;
       throw new Error();
     }
+  }
+
+  async updateAttendee(ownerId: string, updateAttendeeDto: updateAttendeeDto) {
+    const { attendeeId, name, email, role } = updateAttendeeDto;
+
+    const existingAttendee = await this.findAttendeeById(attendeeId);
+    await this.meetingsService.findMeeting(ownerId, existingAttendee.meetingId.toString());
+
+    if (email) {
+      const existingAttendeeWithEmail = await this.attendeeModel.findOne({
+        email,
+        meetingId: existingAttendee.meetingId,
+        _id: { $ne: existingAttendee._id },
+      });
+      if (existingAttendeeWithEmail)
+        throw new ConflictException('Attendee with the same email already exists');
+    }
+
+    if (name !== undefined) existingAttendee.name = name;
+    if (email !== undefined) existingAttendee.email = email;
+    if (role !== undefined) existingAttendee.role = role;
+
+    await existingAttendee.save();
+    return existingAttendee;
   }
 
   async deleteAttendee(ownerId: string, deleteAttendeeDto: deleteAttendeeDto) {

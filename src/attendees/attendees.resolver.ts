@@ -5,6 +5,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Attendee } from './entities/attendee.entity';
 import { addAttendeeDto } from './dtos/addAttendee.dto';
 import { deleteAttendeeDto } from './dtos/deleteAttendee.dto';
+import { updateAttendeeDto } from './dtos/updateAttendee.dto';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
 
@@ -19,6 +20,14 @@ export class AttendeesResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.attendeesService.createAttendee(user.userId, addAttendeeDto);
+  }
+
+  @Mutation(() => Attendee)
+  updateAttendee(
+    @Args('updateAttendeeDto') updateAttendeeDto: updateAttendeeDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.attendeesService.updateAttendee(user.userId, updateAttendeeDto);
   }
 
   @Mutation(() => Attendee)
