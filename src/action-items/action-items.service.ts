@@ -24,6 +24,11 @@ export class ActionItemsService {
     return await this.actionItemModel.find({ meetingId: new Types.ObjectId(meetingId) });
   }
 
+  async findActionItemsByMeetingIdForUser(userId: string, meetingId: string) {
+    await this.meetingsService.findMeeting(userId, meetingId);
+    return await this.findActionItemsByMeetingId(meetingId);
+  }
+
   async findUserActionItems(userId: string, filterDto: ActionItemsFilterDto) {
     let meetingFilter: Types.ObjectId | { $in: Types.ObjectId[] };
 
@@ -60,8 +65,9 @@ export class ActionItemsService {
     return await this.attendeesService.findAttendeesByIds(assigneeIds);
   }
 
-  async createActionItem(createActionItemDto: CreateActionItemDto) {
+  async createActionItem(userId: string, createActionItemDto: CreateActionItemDto) {
     const { meetingId, assigneeId, ...rest } = createActionItemDto;
+    await this.meetingsService.findMeeting(userId, meetingId);
     return await this.actionItemModel.create({
       ...rest,
       meetingId: new Types.ObjectId(meetingId),
@@ -69,9 +75,11 @@ export class ActionItemsService {
     });
   }
 
-  async updateActionItem(updateActionItemDto: UpdateActionItemDto) {
+  async updateActionItem(userId: string, updateActionItemDto: UpdateActionItemDto) {
     const { meetingId, actionItemId, title, description, deadline, status, assigneeId } =
       updateActionItemDto;
+
+    await this.meetingsService.findMeeting(userId, meetingId);
 
     const actionItem = await this.actionItemModel.findOne({
       meetingId: new Types.ObjectId(meetingId),
@@ -91,7 +99,9 @@ export class ActionItemsService {
     return actionItem;
   }
 
-  async deleteActionItem(deleteActionItemDto: DeleteActionItemDto) {
+  async deleteActionItem(userId: string, deleteActionItemDto: DeleteActionItemDto) {
+    await this.meetingsService.findMeeting(userId, deleteActionItemDto.meetingId);
+
     const actionItem = await this.actionItemModel.findOne({
       meetingId: new Types.ObjectId(deleteActionItemDto.meetingId),
       _id: new Types.ObjectId(deleteActionItemDto.actionItemId),

@@ -88,7 +88,7 @@ export class AiService {
     await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.PROCESSING);
 
     try {
-      const results = await this.generateResults(aiInput.meetingId, transcript.content);
+      const results = await this.generateResults(userId, aiInput.meetingId, transcript.content);
       await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.COMPLETED);
       return results;
     } catch (error) {
@@ -104,7 +104,7 @@ export class AiService {
     await this.aiResultsModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
   }
 
-  private async generateResults(meetingId: string, transcript: string) {
+  private async generateResults(userId: string, meetingId: string, transcript: string) {
     let responseText: string | undefined;
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
@@ -150,7 +150,7 @@ export class AiService {
     }
 
     const attendees = await Promise.all(
-      results.attendees.map((attendee) => this.upsertAttendee(meetingId, attendee)),
+      results.attendees.map((attendee) => this.upsertAttendee(userId, meetingId, attendee)),
     );
 
     const normalize = (value: string) => value.trim().toLowerCase();
@@ -163,7 +163,7 @@ export class AiService {
             )
           : undefined;
 
-        return this.actionItemsService.createActionItem({
+        return this.actionItemsService.createActionItem(userId, {
           title: actionItem.description,
           meetingId,
           deadline: actionItem.deadline ? new Date(actionItem.deadline) : undefined,
@@ -183,7 +183,7 @@ export class AiService {
     });
   }
 
-  private async upsertAttendee(meetingId: string, attendee: GeneratedAttendee) {
+  private async upsertAttendee(userId: string, meetingId: string, attendee: GeneratedAttendee) {
     if (attendee.email) {
       const existingAttendee = await this.attendeesService.findAttendeeByEmail(
         meetingId,
@@ -192,7 +192,7 @@ export class AiService {
       if (existingAttendee) return existingAttendee;
     }
 
-    return await this.attendeesService.createAttendee(attendee as addAttendeeDto);
+    return await this.attendeesService.createAttendee(userId, attendee as addAttendeeDto);
   }
 
   async findAIMeetingResults(userId: string, meetingId: string) {

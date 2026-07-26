@@ -1,5 +1,13 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsDate, IsEnum, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { MeetingStatus } from '../enums/meeting-status.enum';
 
 @InputType()
@@ -38,4 +46,9 @@ export class PaginatedMeetingsDto {
   @IsOptional()
   @IsString()
   sortDateOrder?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  hasTodos?: boolean;
 }

@@ -8,6 +8,7 @@ import { TranscriptDocument } from './schemas/transcript.schema';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 import { UploadTranscriptDto } from './dtos/uploadTranscript.dto';
 import { MeetingStatus } from './enums/meeting-status.enum';
+import { ActionItem, ActionItemDocument } from 'src/action-items/schemas/actionItem.schema';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -16,11 +17,8 @@ export class MeetingsService {
   constructor(
     @InjectModel(Meeting.name) private readonly meetingModel: Model<MeetingDocument>,
     @InjectModel(Transcript.name) private readonly transcriptModel: Model<TranscriptDocument>,
+    @InjectModel(ActionItem.name) private readonly actionItemModel: Model<ActionItemDocument>,
   ) {}
-
-  async findAll() {
-    return await this.meetingModel.find({}).sort({ scheduledAt: -1 });
-  }
 
   async findAllUserMeetings(userId: string) {
     return await this.meetingModel
@@ -29,7 +27,8 @@ export class MeetingsService {
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
-    const { pageNo, pageSize, search, scheduledFrom, scheduledTo, sortDateOrder, status } = input;
+    const { pageNo, pageSize, search, scheduledFrom, scheduledTo, sortDateOrder, status, hasTodos } =
+      input;
 
     const filter: QueryFilter<Meeting> = { owner: new Types.ObjectId(userId) };
 
@@ -50,6 +49,12 @@ export class MeetingsService {
         ...(scheduledFrom && { $gte: scheduledFrom }),
         ...(scheduledTo && { $lt: scheduledTo }),
       };
+    }
+
+    // Doar meeting-urile care au cel putin un action item
+    if (hasTodos) {
+      const meetingIdsWithActionItems = await this.actionItemModel.distinct('meetingId');
+      filter._id = { $in: meetingIdsWithActionItems };
     }
 
     const sortByDateOrder = sortDateOrder?.toLowerCase() === 'newest first' ? -1 : 1;

@@ -15,11 +15,6 @@ import { Transcript } from './entities/transcript.entity';
 export class MeetingsResolver {
   constructor(private readonly meetingsService: MeetingsService) {}
 
-  @Query(() => [Meeting])
-  async findAll() {
-    return await this.meetingsService.findAll();
-  }
-
   @Query(() => PaginatedMeetings)
   @UseGuards(AuthGuard)
   async findUserMeetings(
@@ -42,12 +37,22 @@ export class MeetingsResolver {
   }
 
   @ResolveField(() => Transcript, { nullable: true })
-  async findMeetingTranscript(@Args('meetingId') meetingId: string) {
+  @UseGuards(AuthGuard)
+  async findMeetingTranscript(
+    @Args('meetingId') meetingId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.meetingsService.findMeeting(user.userId, meetingId);
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 
   @Query(() => Transcript, { nullable: true })
-  async getTranscript(@Args('meetingId') meetingId: string) {
+  @UseGuards(AuthGuard)
+  async getTranscript(
+    @Args('meetingId') meetingId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.meetingsService.findMeeting(user.userId, meetingId);
     return await this.meetingsService.findTranscriptByMeetingId(meetingId);
   }
 

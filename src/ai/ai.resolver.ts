@@ -38,7 +38,7 @@ export class AiResolver {
   }
 
   @ResolveField(() => [Attendee])
-  attendees(@Parent() aiResults: AIResults) {
-    return this.attendeesService.findMeetingAttendees(aiResults.meetingId.toString());
+  attendees(@Parent() aiResults: AIResults, @CurrentUser() user: AuthenticatedUser) {
+    return this.attendeesService.findMeetingAttendees(user.userId, aiResults.meetingId.toString());
   }
 }

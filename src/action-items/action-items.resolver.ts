@@ -21,8 +21,8 @@ export class ActionItemsResolver {
   constructor(private readonly actionItemsService: ActionItemsService) {}
 
   @Query(() => [ActionItem])
-  getActionItems(@Args('meetingId') meetingId: string) {
-    return this.actionItemsService.findActionItemsByMeetingId(meetingId);
+  getActionItems(@Args('meetingId') meetingId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.actionItemsService.findActionItemsByMeetingIdForUser(user.userId, meetingId);
   }
   @ResolveField(() => [ActionItem])
   actionItems(@Parent() meeting: Meeting) {
@@ -43,18 +43,27 @@ export class ActionItemsResolver {
   }
 
   @Mutation(() => ActionItem)
-  createNewActionItem(@Args('createActionItem') createActionItemDto: CreateActionItemDto) {
-    return this.actionItemsService.createActionItem(createActionItemDto);
+  createNewActionItem(
+    @Args('createActionItem') createActionItemDto: CreateActionItemDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.actionItemsService.createActionItem(user.userId, createActionItemDto);
   }
 
   @Mutation(() => ActionItem)
-  updateActionItem(@Args('updateActionItemDto') updateActionItemDto: UpdateActionItemDto) {
-    return this.actionItemsService.updateActionItem(updateActionItemDto);
+  updateActionItem(
+    @Args('updateActionItemDto') updateActionItemDto: UpdateActionItemDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.actionItemsService.updateActionItem(user.userId, updateActionItemDto);
   }
 
   @Mutation(() => ActionItem)
-  deleteActionItem(@Args('deleteActionItemDto') deleteActionItemDto: DeleteActionItemDto) {
-    return this.actionItemsService.deleteActionItem(deleteActionItemDto);
+  deleteActionItem(
+    @Args('deleteActionItemDto') deleteActionItemDto: DeleteActionItemDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.actionItemsService.deleteActionItem(user.userId, deleteActionItemDto);
   }
 }
 

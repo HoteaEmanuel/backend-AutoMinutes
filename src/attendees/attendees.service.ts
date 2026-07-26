@@ -4,16 +4,20 @@ import { addAttendeeDto } from './dtos/addAttendee.dto';
 import { Attendee, type AttendeeDocument } from './schemas/attendee.schema';
 import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { MeetingsService } from 'src/meetings/meetings.service';
 
 @Injectable()
 export class AttendeesService {
   constructor(
     @InjectModel(Attendee.name) private readonly attendeeModel: Model<AttendeeDocument>,
+    private readonly meetingsService: MeetingsService,
   ) {}
 
-  async createAttendee(addAttendeeDto: addAttendeeDto) {
+  async createAttendee(ownerId: string, addAttendeeDto: addAttendeeDto) {
     try {
       const { meetingId, userId, ...rest } = addAttendeeDto;
+
+      await this.meetingsService.findMeeting(ownerId, meetingId);
 
       if (addAttendeeDto.email) {
         const existingAttendeeWithEmail = await this.attendeeModel.findOne({
@@ -36,17 +40,23 @@ export class AttendeesService {
     }
   }
 
-  async deleteAttendee(deleteAttendeeDto: deleteAttendeeDto) {
-    const existingAttendee = await this.attendeeModel.findById(deleteAttendeeDto.attendeeId);
-
-    if (!existingAttendee) throw new NotFoundException('Attendee not found');
+  async deleteAttendee(ownerId: string, deleteAttendeeDto: deleteAttendeeDto) {
+    const existingAttendee = await this.findAttendeeById(deleteAttendeeDto.attendeeId);
+    await this.meetingsService.findMeeting(ownerId, existingAttendee.meetingId.toString());
 
     await existingAttendee.deleteOne();
     return existingAttendee;
   }
 
-  async findMeetingAttendees(meetingId: string) {
+  async findMeetingAttendees(ownerId: string, meetingId: string) {
+    await this.meetingsService.findMeeting(ownerId, meetingId);
     return await this.attendeeModel.find({ meetingId: new Types.ObjectId(meetingId) });
+  }
+
+  async findOwnedAttendeeById(ownerId: string, attendeeId: string) {
+    const attendee = await this.findAttendeeById(attendeeId);
+    await this.meetingsService.findMeeting(ownerId, attendee.meetingId.toString());
+    return attendee;
   }
 
   async findAttendeeById(attendeeId: string) {
