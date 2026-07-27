@@ -8,7 +8,11 @@ import jwtConfig from '@config/jwt.config';
 import dbConfig from '@config/db.config';
 import aiConfig from '@config/ai.config';
 import r2Config from '@config/r2.config';
+import mailConfig from '@config/mail.config';
 import { AuthModule } from 'src/auth/auth.module';
+import { MailModule } from 'src/mail/mail.module';
+import { EmailVerificationModule } from 'src/email-verification/email-verification.module';
+import { PasswordResetModule } from 'src/password-reset/password-reset.module';
 import { MeetingsModule } from 'src/meetings/meetings.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -23,7 +27,7 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [jwtConfig, dbConfig, aiConfig, r2Config],
+      load: [jwtConfig, dbConfig, aiConfig, r2Config, mailConfig],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -36,6 +40,9 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    MailModule,
+    EmailVerificationModule,
+    PasswordResetModule,
     MeetingsModule,
     AiModule,
     AttendeesModule,

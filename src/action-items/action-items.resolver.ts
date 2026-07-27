@@ -21,8 +21,17 @@ export class ActionItemsResolver {
   constructor(private readonly actionItemsService: ActionItemsService) {}
 
   @Query(() => [ActionItem])
-  getActionItems(@Args('meetingId') meetingId: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.actionItemsService.findActionItemsByMeetingIdForUser(user.userId, meetingId);
+  getActionItems(
+    @Args('meetingId') meetingId: string,
+    @Args('onlyMine', { nullable: true, type: () => Boolean }) onlyMine: boolean,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.actionItemsService.findActionItemsByMeetingIdForUser(
+      user.userId,
+      user.email,
+      meetingId,
+      onlyMine,
+    );
   }
   @ResolveField(() => [ActionItem])
   actionItems(@Parent() meeting: Meeting) {
@@ -34,7 +43,7 @@ export class ActionItemsResolver {
     @Args('filter', { nullable: true }) filter: ActionItemsFilterDto = {},
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.actionItemsService.findUserActionItems(user.userId, filter);
+    return this.actionItemsService.findUserActionItems(user.userId, user.email, filter);
   }
 
   @Query(() => [Attendee])

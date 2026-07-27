@@ -17,6 +17,10 @@ import { AuthGuard } from './guards/auth.guard';
 import { UsersService } from '@users/users.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
+import { ResendVerificationDto } from './dtos/resend-verification.dto';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import type { Response, Request } from 'express';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { type AuthenticatedUser } from 'src/types/express';
@@ -43,12 +47,33 @@ export class AuthController {
   }
 
   @Post('signup')
-  async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const user = await this.usersService.create(registerDto);
-    const tokenData = { sub: user._id.toString(), email: user.email };
-    const { accessToken, refreshToken } = await this.authService.createTokens(tokenData);
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.signup(registerDto);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(
+    @Body() verifyEmailDto: VerifyEmailDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken, user } = await this.authService.verifyEmail(verifyEmailDto);
     this.saveCookie(refreshToken, res);
     return { accessToken, user };
+  }
+
+  @Post('resend-verification')
+  async resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
+    return this.authService.resendVerification(resendVerificationDto.email);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @Post('login')

@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class ActionItemsFilterDto {
@@ -17,4 +17,9 @@ export class ActionItemsFilterDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  onlyMine?: boolean;
 }

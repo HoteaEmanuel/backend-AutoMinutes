@@ -98,7 +98,16 @@ export class UsersService {
     avatar?: string;
   }) {
     const existing = await this.userModel.findOne({ email: profile.email });
-    if (existing) return existing;
+    if (existing) {
+      if (!existing.emailVerified) {
+        await this.userModel.updateOne(
+          { _id: existing._id },
+          { $set: { emailVerified: true }, $unset: { passwordHash: '' } },
+        );
+        existing.emailVerified = true;
+      }
+      return existing;
+    }
 
     return await this.userModel.create({
       email: profile.email,
@@ -106,15 +115,34 @@ export class UsersService {
       lastName: profile.lastName,
       avatar: profile.avatar,
       provider: 'google',
+      emailVerified: true,
     });
   }
 
-  async findByEmail(email: string) {
-    const user = await this.userModel
-      .findOne({ email })
-      .select({ passwordHash: true, email: true })
+  async findByEmailOrNull(email: string) {
+    return this.userModel
+      .findOne({ email: email.trim().toLowerCase() })
+      .select('+passwordHash')
       .lean();
-    if (!user) throw new NotFoundException(`User with email: ${email} was not found`);
+  }
+
+  async markEmailVerified(userId: Types.ObjectId | string) {
+    const user = await this.userModel.findByIdAndUpdate(
+      new Types.ObjectId(userId),
+      { emailVerified: true },
+      { new: true },
+    );
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async setPasswordHash(userId: Types.ObjectId | string, passwordHash: string) {
+    const user = await this.userModel.findByIdAndUpdate(
+      new Types.ObjectId(userId),
+      { passwordHash },
+      { new: true },
+    );
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
