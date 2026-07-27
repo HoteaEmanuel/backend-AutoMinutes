@@ -24,12 +24,31 @@ export class ActionItemsService {
     return await this.actionItemModel.find({ meetingId: new Types.ObjectId(meetingId) });
   }
 
-  async findActionItemsByMeetingIdForUser(userId: string, meetingId: string) {
+  async findActionItemsByMeetingIdForUser(
+    userId: string,
+    userEmail: string,
+    meetingId: string,
+    onlyMine?: boolean,
+  ) {
     await this.meetingsService.findMeeting(userId, meetingId);
+
+    if (onlyMine) {
+      const attendee = await this.attendeesService.findAttendeeForMeetingAndUser(
+        meetingId,
+        userId,
+        userEmail,
+      );
+      if (!attendee) return [];
+      return await this.actionItemModel.find({
+        meetingId: new Types.ObjectId(meetingId),
+        assigneeId: attendee._id,
+      });
+    }
+
     return await this.findActionItemsByMeetingId(meetingId);
   }
 
-  async findUserActionItems(userId: string, filterDto: ActionItemsFilterDto) {
+  async findUserActionItems(userId: string, userEmail: string, filterDto: ActionItemsFilterDto) {
     let meetingFilter: Types.ObjectId | { $in: Types.ObjectId[] };
 
     if (filterDto.meetingId) {
@@ -40,10 +59,14 @@ export class ActionItemsService {
       meetingFilter = { $in: userMeetings.map((meeting) => meeting._id) };
     }
 
-    const filter: QueryFilter<ActionItemDocument> = {
-      meetingId: meetingFilter,
-      ...(filterDto.assigneeId && { assigneeId: new Types.ObjectId(filterDto.assigneeId) }),
-    };
+    const filter: QueryFilter<ActionItemDocument> = { meetingId: meetingFilter };
+
+    if (filterDto.onlyMine) {
+      const attendeeIds = await this.attendeesService.findAttendeeIdsForUser(userId, userEmail);
+      filter.assigneeId = { $in: attendeeIds };
+    } else if (filterDto.assigneeId) {
+      filter.assigneeId = new Types.ObjectId(filterDto.assigneeId);
+    }
 
     if (filterDto.search?.trim().length) {
       const regex = { $regex: escapeRegex(filterDto.search), $options: 'i' };

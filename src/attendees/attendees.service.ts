@@ -7,6 +7,14 @@ import { ConflictException, HttpException, Injectable, NotFoundException } from 
 import { InjectModel } from '@nestjs/mongoose';
 import { MeetingsService } from 'src/meetings/meetings.service';
 
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildUserMatchConditions = (userId: string, email?: string) => {
+  const conditions: Record<string, unknown>[] = [{ userId: new Types.ObjectId(userId) }];
+  if (email) conditions.push({ email: { $regex: `^${escapeRegex(email)}$`, $options: 'i' } });
+  return conditions;
+};
+
 @Injectable()
 export class AttendeesService {
   constructor(
@@ -92,6 +100,19 @@ export class AttendeesService {
 
   async findAttendeesByIds(attendeeIds: Types.ObjectId[]) {
     return await this.attendeeModel.find({ _id: { $in: attendeeIds } });
+  }
+
+  async findAttendeeIdsForUser(userId: string, email?: string) {
+    return await this.attendeeModel.distinct('_id', {
+      $or: buildUserMatchConditions(userId, email),
+    });
+  }
+
+  async findAttendeeForMeetingAndUser(meetingId: string, userId: string, email?: string) {
+    return await this.attendeeModel.findOne({
+      meetingId: new Types.ObjectId(meetingId),
+      $or: buildUserMatchConditions(userId, email),
+    });
   }
 
   async findAttendeeByEmail(meetingId: string, email: string) {

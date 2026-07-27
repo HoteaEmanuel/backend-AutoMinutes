@@ -21,6 +21,9 @@ export class User {
   @Prop({ default: Provider.LOCAL, enum: Provider })
   provider!: string;
 
+  @Prop({ default: false })
+  emailVerified!: boolean;
+
   @Prop()
   avatar?: string;
 }

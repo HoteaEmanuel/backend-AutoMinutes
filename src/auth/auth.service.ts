@@ -1,11 +1,24 @@
 import { UsersService } from './../users/users.service';
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { type ConfigType } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import googleOauthConfig from './config/google-oauth.config';
+import { EmailVerificationService } from 'src/email-verification/email-verification.service';
+import { PasswordResetService } from 'src/password-reset/password-reset.service';
 
 type tokenCreationProps = {
   sub: string;
@@ -21,6 +34,8 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
+    private readonly emailVerificationService: EmailVerificationService,
+    private readonly passwordResetService: PasswordResetService,
     @Inject(googleOauthConfig.KEY)
     private readonly googleConfig: ConfigType<typeof googleOauthConfig>,
   ) {
@@ -67,14 +82,22 @@ export class AuthService {
   }
 
   async authenticate(loginDto: LoginDto) {
-    const user = await this.usersService.findByEmail(loginDto.email);
-    if (!user) throw new UnauthorizedException('User not found');
+    const user = await this.usersService.findByEmailOrNull(loginDto.email);
+    if (!user) throw new UnauthorizedException('Invalid email or password');
 
     if (!user.passwordHash)
       throw new UnauthorizedException('This account used Google to sign in - Continue with Google');
     const passwordsMatch = await this.comparePasswords(loginDto.password, user.passwordHash);
 
-    if (!passwordsMatch) throw new UnauthorizedException('Invalid credentials');
+    if (!passwordsMatch) throw new UnauthorizedException('Invalid email or password');
+
+    if (!user.emailVerified) {
+      throw new ForbiddenException({
+        message: 'Please verify your email before logging in. Check your inbox for the code.',
+        code: 'EMAIL_NOT_VERIFIED',
+        email: user.email,
+      });
+    }
 
     try {
       const { refreshToken, accessToken } = await this.createTokens({
@@ -92,15 +115,89 @@ export class AuthService {
     }
   }
 
+  async signup(registerDto: RegisterDto) {
+    const user = await this.usersService.create(registerDto);
+    await this.emailVerificationService.issueCode({
+      userId: user._id,
+      email: user.email,
+      firstName: user.firstName,
+    });
+
+    return { email: user.email };
+  }
+
+  async verifyEmail({ email, code }: VerifyEmailDto) {
+    const user = await this.usersService.findByEmailOrNull(email);
+    if (!user) throw new NotFoundException('No account found for this email');
+    if (user.emailVerified)
+      throw new BadRequestException('This email is already verified. You can log in.');
+
+    await this.emailVerificationService.consumeCode(user._id, code);
+    const verified = await this.usersService.markEmailVerified(user._id);
+
+    const { accessToken, refreshToken } = await this.createTokens({
+      sub: verified._id.toHexString(),
+      email: verified.email,
+    });
+    return { accessToken, refreshToken, user: verified };
+  }
+
+  async resendVerification(email: string) {
+    const user = await this.usersService.findByEmailOrNull(email);
+    if (!user) throw new NotFoundException('No account found for this email');
+    if (user.emailVerified)
+      throw new BadRequestException('This email is already verified. You can log in.');
+
+    await this.emailVerificationService.resendCode({
+      userId: user._id,
+      email: user.email,
+      firstName: user.firstName,
+    });
+    return { email: user.email };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmailOrNull(email);
+    if (user) {
+      try {
+        if (user.passwordHash) {
+          await this.passwordResetService.requestReset({
+            userId: user._id,
+            email: user.email,
+            firstName: user.firstName,
+          });
+        } else {
+          await this.passwordResetService.notifyGoogleOnlyAccount(user.email, user.firstName);
+        }
+      } catch (error) {
+        const response = error instanceof HttpException ? error.getResponse() : null;
+        const code =
+          typeof response === 'object' && response ? (response as { code?: string }).code : null;
+        const isRateLimited = code === 'RESEND_COOLDOWN' || code === 'RESEND_LIMIT';
+        if (!isRateLimited) throw error;
+      }
+    }
+
+    return {
+      message: "If an account exists for this email, we've sent password reset instructions.",
+    };
+  }
+
+  async resetPassword({ token, newPassword }: ResetPasswordDto) {
+    const userId = await this.passwordResetService.consumeToken(token);
+    const passwordHash = await this.hashPassword(newPassword);
+    await this.usersService.setPasswordHash(userId, passwordHash);
+    return { success: true };
+  }
+
   async refreshToken(refreshToken: string) {
     const tokenPayload = (await this.tokenService.verifyRefresh(refreshToken)) as {
       sub: string;
-      email: string;
     };
 
-    const accessToken = await this.createAccessToken(tokenPayload);
-
     const user = await this.usersService.findById(tokenPayload.sub);
+
+    const accessToken = await this.createAccessToken({ sub: tokenPayload.sub, email: user.email });
 
     return { accessToken, user };
   }
