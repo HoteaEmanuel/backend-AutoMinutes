@@ -20,8 +20,29 @@ export class ActionItemsService {
     private readonly attendeesService: AttendeesService,
   ) {}
 
+  private async attachAssignees(items: ActionItemDocument[]) {
+    const assigneeIds = [
+      ...new Set(
+        items.filter((item) => item.assigneeId).map((item) => item.assigneeId!.toString()),
+      ),
+    ];
+    const attendees = assigneeIds.length
+      ? await this.attendeesService.findAttendeesByIds(
+          assigneeIds.map((id) => new Types.ObjectId(id)),
+        )
+      : [];
+    const attendeeById = new Map(attendees.map((attendee) => [attendee._id.toString(), attendee]));
+
+    return items.map((item) =>
+      Object.assign(item, {
+        assignee: item.assigneeId ? (attendeeById.get(item.assigneeId.toString()) ?? null) : null,
+      }),
+    );
+  }
+
   async findActionItemsByMeetingId(meetingId: string) {
-    return await this.actionItemModel.find({ meetingId: new Types.ObjectId(meetingId) });
+    const items = await this.actionItemModel.find({ meetingId: new Types.ObjectId(meetingId) });
+    return await this.attachAssignees(items);
   }
 
   async findActionItemsByMeetingIdForUser(
@@ -39,10 +60,11 @@ export class ActionItemsService {
         userEmail,
       );
       if (!attendee) return [];
-      return await this.actionItemModel.find({
+      const items = await this.actionItemModel.find({
         meetingId: new Types.ObjectId(meetingId),
         assigneeId: attendee._id,
       });
+      return items.map((item) => Object.assign(item, { assignee: attendee }));
     }
 
     return await this.findActionItemsByMeetingId(meetingId);
@@ -73,7 +95,8 @@ export class ActionItemsService {
       filter.$or = [{ title: regex }, { description: regex }];
     }
 
-    return await this.actionItemModel.find(filter);
+    const items = await this.actionItemModel.find(filter);
+    return await this.attachAssignees(items);
   }
 
   async findDistinctAssignees(userId: string) {
@@ -89,8 +112,12 @@ export class ActionItemsService {
   }
 
   async createActionItem(userId: string, createActionItemDto: CreateActionItemDto) {
+    await this.meetingsService.findMeeting(userId, createActionItemDto.meetingId);
+    return await this.createActionItemForVerifiedMeeting(createActionItemDto);
+  }
+
+  async createActionItemForVerifiedMeeting(createActionItemDto: CreateActionItemDto) {
     const { meetingId, assigneeId, ...rest } = createActionItemDto;
-    await this.meetingsService.findMeeting(userId, meetingId);
     return await this.actionItemModel.create({
       ...rest,
       meetingId: new Types.ObjectId(meetingId),

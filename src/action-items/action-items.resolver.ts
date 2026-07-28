@@ -82,7 +82,11 @@ export class ActionItemFieldsResolver {
   constructor(private readonly attendeeService: AttendeesService) {}
 
   @ResolveField(() => Attendee, { nullable: true })
-  async assignee(@Parent() actionItem: ActionItem & { assigneeId?: Types.ObjectId }) {
+  async assignee(
+    @Parent()
+    actionItem: ActionItem & { assigneeId?: Types.ObjectId; assignee?: Attendee | null },
+  ) {
+    if (actionItem.assignee !== undefined) return actionItem.assignee;
     if (!actionItem.assigneeId) return null;
     try {
       return await this.attendeeService.findAttendeeById(actionItem.assigneeId.toString());
