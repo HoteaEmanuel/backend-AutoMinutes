@@ -23,10 +23,13 @@ export class AttendeesService {
   ) {}
 
   async createAttendee(ownerId: string, addAttendeeDto: addAttendeeDto) {
+    await this.meetingsService.findMeeting(ownerId, addAttendeeDto.meetingId);
+    return await this.createAttendeeForVerifiedMeeting(addAttendeeDto);
+  }
+
+  async createAttendeeForVerifiedMeeting(addAttendeeDto: addAttendeeDto) {
     try {
       const { meetingId, userId, ...rest } = addAttendeeDto;
-
-      await this.meetingsService.findMeeting(ownerId, meetingId);
 
       if (addAttendeeDto.email) {
         const existingAttendeeWithEmail = await this.attendeeModel.findOne({

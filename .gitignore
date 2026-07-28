@@ -60,3 +60,4 @@ PROJECT_CONTEXT.md
 
 # Auto-generated GraphQL schema (regenerated on every server start)
 src/schema.gql
+.playwright-mcp/*
