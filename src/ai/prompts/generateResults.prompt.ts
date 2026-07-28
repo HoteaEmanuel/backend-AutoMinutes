@@ -46,7 +46,7 @@ FIELD RULES
 
 STRICT RULES
 - Base every field strictly on the content of the transcript. Do not hallucinate names, dates, or facts.
-- If the transcript is empty, unintelligible, or contains no meaningful meeting content, still return valid JSON with "summary" explaining this and empty/null values for the remaining fields.
+- If the transcript is empty, unintelligible, or contains no meaningful meeting content, still return valid JSON with "summary" explaining this. Use empty arrays for "actionItems" and "attendees", and null for every other field, per the field-specific rules above.
 - Never wrap the JSON in markdown code fences (no \`\`\`json).
 - Never include comments, trailing commas, or any text outside the JSON object.
 - Output must be valid, parseable JSON.

@@ -1,5 +1,6 @@
 import { Field, GraphQLISODateTime, InputType } from '@nestjs/graphql';
 import { IsDate, IsNotEmpty, IsOptional, IsString, MaxLength, MinDate } from 'class-validator';
+import { DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH } from '@common/constants/validation.constants';
 
 const startOfToday = () => {
   const date = new Date();
@@ -12,13 +13,13 @@ export class CreateMeetingDto {
   @Field()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
+  @MaxLength(TITLE_MAX_LENGTH)
   title!: string;
 
   @Field({ nullable: true })
   @IsString()
   @IsOptional()
-  @MaxLength(2000)
+  @MaxLength(DESCRIPTION_MAX_LENGTH)
   description?: string;
 
   @Field(() => GraphQLISODateTime)
