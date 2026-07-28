@@ -6,6 +6,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import type { AuthenticatedUser } from 'src/types/express';
 import { CreateMeetingDto } from './dtos/createMeeting.dto';
+import { UpdateMeetingDto } from './dtos/updateMeeting.dto';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 import { UploadTranscriptDto } from './dtos/uploadTranscript.dto';
 import { PaginatedMeetings } from './entities/paginatedMeetings.entity';
@@ -63,6 +64,15 @@ export class MeetingsResolver {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return await this.meetingsService.createMeeting(user.userId, createMeetingDto);
+  }
+
+  @Mutation(() => Meeting)
+  @UseGuards(AuthGuard)
+  async updateMeeting(
+    @Args('updateMeetingInput') updateMeetingDto: UpdateMeetingDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.meetingsService.updateMeeting(user.userId, updateMeetingDto);
   }
 
   @Mutation(() => Meeting)

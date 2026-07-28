@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter, StrictCondition, Types } from 'mongoose';
 import { Meeting, MeetingDocument } from './schemas/meetings.schema';
 import { CreateMeetingDto } from './dtos/createMeeting.dto';
+import { UpdateMeetingDto } from './dtos/updateMeeting.dto';
 import { Transcript } from './entities/transcript.entity';
 import { TranscriptDocument } from './schemas/transcript.schema';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
@@ -27,8 +28,16 @@ export class MeetingsService {
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {
-    const { pageNo, pageSize, search, scheduledFrom, scheduledTo, sortDateOrder, status, hasTodos } =
-      input;
+    const {
+      pageNo,
+      pageSize,
+      search,
+      scheduledFrom,
+      scheduledTo,
+      sortDateOrder,
+      status,
+      hasTodos,
+    } = input;
 
     const filter: QueryFilter<Meeting> = { owner: new Types.ObjectId(userId) };
 
@@ -93,6 +102,18 @@ export class MeetingsService {
       });
     }
 
+    return meeting;
+  }
+
+  async updateMeeting(userId: string, updateMeetingDto: UpdateMeetingDto) {
+    const { meetingId, title, description, scheduledAt } = updateMeetingDto;
+    const meeting = await this.findMeeting(userId, meetingId);
+
+    if (title !== undefined) meeting.title = title;
+    if (description !== undefined) meeting.description = description;
+    if (scheduledAt !== undefined) meeting.scheduledAt = scheduledAt;
+
+    await meeting.save();
     return meeting;
   }
 

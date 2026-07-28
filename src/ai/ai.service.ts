@@ -2,7 +2,9 @@ import {
   BadGatewayException,
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
@@ -60,6 +62,7 @@ const actionItemStatusMap: Record<ActionItemStatus, ActionItemStatusEnum> = {
 
 @Injectable()
 export class AiService {
+  private readonly logger = new Logger(AiService.name);
   private readonly baseUrl: string;
   private readonly model: string;
 
@@ -93,7 +96,12 @@ export class AiService {
       return results;
     } catch (error) {
       await this.meetingsService.updateStatus(aiInput.meetingId, MeetingStatus.FAILED);
-      throw error;
+      if (error instanceof HttpException) throw error;
+      this.logger.error(
+        `AI processing failed for meeting ${aiInput.meetingId}`,
+        error instanceof Error ? error.stack : error,
+      );
+      throw new BadGatewayException('AI processing failed. Please try again later.');
     }
   }
 
@@ -124,7 +132,11 @@ export class AiService {
 
       const data = (await response.json()) as OllamaChatResponse;
       responseText = data.message?.content;
-    } catch {
+    } catch (error) {
+      this.logger.error(
+        `Ollama request failed for meeting ${meetingId}`,
+        error instanceof Error ? error.stack : error,
+      );
       throw new BadGatewayException('AI processing failed. Please try again later.');
     }
 
@@ -139,13 +151,18 @@ export class AiService {
       };
       results = {
         ...parsed,
-        attendees: parsed.attendees.map((attendee) => ({
+        actionItems: parsed.actionItems ?? [],
+        attendees: (parsed.attendees ?? []).map((attendee) => ({
           ...attendee,
           aiGenerated: true,
           meetingId,
         })),
       };
-    } catch {
+    } catch (error) {
+      this.logger.error(
+        `Failed to parse AI response for meeting ${meetingId}: ${responseText}`,
+        error instanceof Error ? error.stack : error,
+      );
       throw new BadGatewayException('AI service returned an invalid response.');
     }
 
@@ -200,9 +217,7 @@ export class AiService {
       if (existingAttendee) return existingAttendee;
     }
 
-    return await this.attendeesService.createAttendeeForVerifiedMeeting(
-      attendee as addAttendeeDto,
-    );
+    return await this.attendeesService.createAttendeeForVerifiedMeeting(attendee as addAttendeeDto);
   }
 
   async findAIMeetingResults(userId: string, meetingId: string) {
