@@ -77,7 +77,10 @@ export class ActionItemsService {
       await this.meetingsService.findMeeting(userId, filterDto.meetingId);
       meetingFilter = new Types.ObjectId(filterDto.meetingId);
     } else {
-      const userMeetings = await this.meetingsService.findAllUserMeetings(userId);
+      const userMeetings = await this.meetingsService.findAllUserMeetings(userId, {
+        scheduledFrom: filterDto.scheduledFrom,
+        scheduledTo: filterDto.scheduledTo,
+      });
       meetingFilter = { $in: userMeetings.map((meeting) => meeting._id) };
     }
 

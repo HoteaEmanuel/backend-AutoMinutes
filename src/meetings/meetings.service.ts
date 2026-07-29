@@ -21,10 +21,20 @@ export class MeetingsService {
     @InjectModel(ActionItem.name) private readonly actionItemModel: Model<ActionItemDocument>,
   ) {}
 
-  async findAllUserMeetings(userId: string) {
-    return await this.meetingModel
-      .find({ owner: new Types.ObjectId(userId) })
-      .sort({ scheduledAt: -1 });
+  async findAllUserMeetings(
+    userId: string,
+    range?: { scheduledFrom?: Date; scheduledTo?: Date },
+  ) {
+    const filter: QueryFilter<Meeting> = { owner: new Types.ObjectId(userId) };
+
+    if (range?.scheduledFrom || range?.scheduledTo) {
+      filter.scheduledAt = {
+        ...(range.scheduledFrom && { $gte: range.scheduledFrom }),
+        ...(range.scheduledTo && { $lt: range.scheduledTo }),
+      };
+    }
+
+    return await this.meetingModel.find(filter).sort({ scheduledAt: -1 });
   }
 
   async findUserMeetings(userId: string, input: PaginatedMeetingsDto) {

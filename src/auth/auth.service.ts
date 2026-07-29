@@ -5,7 +5,6 @@ import {
   HttpException,
   Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { type ConfigType } from '@nestjs/config';
@@ -85,8 +84,7 @@ export class AuthService {
     const user = await this.usersService.findByEmailOrNull(loginDto.email);
     if (!user) throw new UnauthorizedException('Invalid email or password');
 
-    if (!user.passwordHash)
-      throw new UnauthorizedException('This account used Google to sign in - Continue with Google');
+    if (!user.passwordHash) throw new UnauthorizedException('Invalid email or password');
     const passwordsMatch = await this.comparePasswords(loginDto.password, user.passwordHash);
 
     if (!passwordsMatch) throw new UnauthorizedException('Invalid email or password');
@@ -116,6 +114,28 @@ export class AuthService {
   }
 
   async signup(registerDto: RegisterDto) {
+    const existingUser = await this.usersService.findByEmailOrNull(registerDto.email);
+
+    if (existingUser) {
+      try {
+        if (!existingUser.emailVerified) {
+          await this.emailVerificationService.resendCode({
+            userId: existingUser._id,
+            email: existingUser.email,
+            firstName: existingUser.firstName,
+          });
+        } else {
+          await this.emailVerificationService.notifyExistingAccount(
+            existingUser.email,
+            existingUser.firstName,
+          );
+        }
+      } catch (error) {
+        if (!this.isRateLimitError(error)) throw error;
+      }
+      return { email: registerDto.email };
+    }
+
     const user = await this.usersService.create(registerDto);
     await this.emailVerificationService.issueCode({
       userId: user._id,
@@ -126,11 +146,16 @@ export class AuthService {
     return { email: user.email };
   }
 
+  private isRateLimitError(error: unknown): boolean {
+    const response = error instanceof HttpException ? error.getResponse() : null;
+    const code =
+      typeof response === 'object' && response ? (response as { code?: string }).code : null;
+    return code === 'RESEND_COOLDOWN' || code === 'RESEND_LIMIT';
+  }
+
   async verifyEmail({ email, code }: VerifyEmailDto) {
     const user = await this.usersService.findByEmailOrNull(email);
-    if (!user) throw new NotFoundException('No account found for this email');
-    if (user.emailVerified)
-      throw new BadRequestException('This email is already verified. You can log in.');
+    if (!user || user.emailVerified) throw new BadRequestException('Invalid or expired code.');
 
     await this.emailVerificationService.consumeCode(user._id, code);
     const verified = await this.usersService.markEmailVerified(user._id);
@@ -144,16 +169,20 @@ export class AuthService {
 
   async resendVerification(email: string) {
     const user = await this.usersService.findByEmailOrNull(email);
-    if (!user) throw new NotFoundException('No account found for this email');
-    if (user.emailVerified)
-      throw new BadRequestException('This email is already verified. You can log in.');
 
-    await this.emailVerificationService.resendCode({
-      userId: user._id,
-      email: user.email,
-      firstName: user.firstName,
-    });
-    return { email: user.email };
+    if (user && !user.emailVerified) {
+      try {
+        await this.emailVerificationService.resendCode({
+          userId: user._id,
+          email: user.email,
+          firstName: user.firstName,
+        });
+      } catch (error) {
+        if (!this.isRateLimitError(error)) throw error;
+      }
+    }
+
+    return { email };
   }
 
   async forgotPassword(email: string) {
@@ -170,16 +199,13 @@ export class AuthService {
           await this.passwordResetService.notifyGoogleOnlyAccount(user.email, user.firstName);
         }
       } catch (error) {
-        const response = error instanceof HttpException ? error.getResponse() : null;
-        const code =
-          typeof response === 'object' && response ? (response as { code?: string }).code : null;
-        const isRateLimited = code === 'RESEND_COOLDOWN' || code === 'RESEND_LIMIT';
-        if (!isRateLimited) throw error;
+        if (!this.isRateLimitError(error)) throw error;
       }
     }
 
     return {
-      message: "If an account exists for this email, we've sent password reset instructions.",
+      message:
+        'If an account with that email address exists, you will receive an email at that address in a few minutes with further instructions.',
     };
   }
 

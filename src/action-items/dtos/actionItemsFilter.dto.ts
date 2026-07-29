@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class ActionItemsFilterDto {
@@ -22,4 +22,14 @@ export class ActionItemsFilterDto {
   @IsOptional()
   @IsBoolean()
   onlyMine?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDate()
+  scheduledFrom?: Date;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDate()
+  scheduledTo?: Date;
 }
