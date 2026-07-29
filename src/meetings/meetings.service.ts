@@ -126,22 +126,49 @@ export class MeetingsService {
   }
 
   async findTranscriptByMeetingId(meetingId: string) {
-    const transcript = await this.transcriptModel.findOne({
+    const active = await this.transcriptModel.findOne({
       meetingId: new Types.ObjectId(meetingId),
+      isActive: true,
     });
-    return transcript;
+    if (active) return active;
+
+    return await this.transcriptModel
+      .findOne({ meetingId: new Types.ObjectId(meetingId) })
+      .sort({ createdAt: -1 });
+  }
+
+  async findTranscriptVersions(meetingId: string) {
+    return await this.transcriptModel
+      .find({ meetingId: new Types.ObjectId(meetingId) })
+      .sort({ createdAt: -1 });
   }
 
   async setTranscript(userId: string, uploadTranscriptDto: UploadTranscriptDto) {
     const { meetingId, content } = uploadTranscriptDto;
     await this.findMeeting(userId, meetingId);
 
-    await this.transcriptModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
+    await this.transcriptModel.updateMany(
+      { meetingId: new Types.ObjectId(meetingId) },
+      { isActive: false },
+    );
 
     return await this.transcriptModel.create({
       content,
       meetingId: new Types.ObjectId(meetingId),
+      isActive: true,
     });
+  }
+
+  async selectTranscriptVersion(userId: string, transcriptId: string) {
+    const transcript = await this.transcriptModel.findById(new Types.ObjectId(transcriptId));
+    if (!transcript) throw new NotFoundException('Transcript version was not found');
+
+    await this.findMeeting(userId, transcript.meetingId.toString());
+
+    await this.transcriptModel.updateMany({ meetingId: transcript.meetingId }, { isActive: false });
+    transcript.isActive = true;
+    await transcript.save();
+    return transcript;
   }
 
   async deleteAllUserMeetings(userId: string) {

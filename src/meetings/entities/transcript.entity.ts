@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class Transcript {
@@ -10,4 +10,10 @@ export class Transcript {
 
   @Field(() => ID)
   meetingId!: string;
+
+  @Field()
+  isActive!: boolean;
+
+  @Field(() => GraphQLISODateTime)
+  createdAt!: Date;
 }
