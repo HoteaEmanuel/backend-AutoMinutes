@@ -5,7 +5,10 @@ import { randomInt } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 import { EmailVerification } from './schemas/email-verification.schema';
 import { MailService } from 'src/mail/mail.service';
-import { verificationCodeTemplate } from 'src/mail/templates/verification-code.template';
+import {
+  verificationCodeTemplate,
+  existingAccountNoticeTemplate,
+} from 'src/mail/templates/verification-code.template';
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const CODE_TTL_MINUTES = CODE_TTL_MS / (60 * 1000);
@@ -37,6 +40,11 @@ export class EmailVerificationService {
       code,
       expiresInMinutes: CODE_TTL_MINUTES,
     });
+    await this.mailService.send({ to: email, subject, html, text });
+  }
+
+  async notifyExistingAccount(email: string, firstName: string): Promise<void> {
+    const { subject, html, text } = existingAccountNoticeTemplate({ firstName });
     await this.mailService.send({ to: email, subject, html, text });
   }
 

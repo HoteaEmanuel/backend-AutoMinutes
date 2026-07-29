@@ -6,7 +6,6 @@ import { type AuthenticatedUser } from 'src/types/express';
 import { UsersService } from './users.service';
 import { R2Service } from './storage/r2.service';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateProfileInput } from './dtos/update-profile.input';
 import { ChangePasswordInput } from './dtos/change-password.input';
 import { SetPasswordInput } from './dtos/set-password.input';
@@ -86,10 +85,5 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   users() {
     return this.usersService.findAll();
-  }
-
-  @Mutation(() => User)
-  createUser(@Args('createUserDto') createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
   }
 }

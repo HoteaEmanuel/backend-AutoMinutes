@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   HttpException,
   Injectable,
   NotFoundException,
@@ -17,8 +16,6 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const existingUser = await this.userModel.findOne({ email: createUserDto.email });
-      if (existingUser) throw new ConflictException('A user with this email already exists');
       const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
       const userCreated = await this.userModel.create({
         passwordHash: hashedPassword,
