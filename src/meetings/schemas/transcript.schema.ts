@@ -10,6 +10,9 @@ export class Transcript {
 
   @Prop({ required: true, ref: 'Meeting', index: true, type: Types.ObjectId })
   meetingId!: Types.ObjectId;
+
+  @Prop({ required: true, default: true })
+  isActive!: boolean;
 }
 
 export const TranscriptSchema = SchemaFactory.createForClass(Transcript);

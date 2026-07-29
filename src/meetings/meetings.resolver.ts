@@ -89,4 +89,23 @@ export class MeetingsResolver {
   ) {
     return await this.meetingsService.setTranscript(user.userId, uploadTranscriptDto);
   }
+
+  @Query(() => [Transcript])
+  @UseGuards(AuthGuard)
+  async getTranscriptVersions(
+    @Args('meetingId') meetingId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.meetingsService.findMeeting(user.userId, meetingId);
+    return await this.meetingsService.findTranscriptVersions(meetingId);
+  }
+
+  @Mutation(() => Transcript)
+  @UseGuards(AuthGuard)
+  async selectTranscriptVersion(
+    @Args('transcriptId') transcriptId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.meetingsService.selectTranscriptVersion(user.userId, transcriptId);
+  }
 }
