@@ -1,5 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from '@users/users.module';
@@ -9,6 +11,8 @@ import dbConfig from '@config/db.config';
 import aiConfig from '@config/ai.config';
 import r2Config from '@config/r2.config';
 import mailConfig from '@config/mail.config';
+import rateLimitConfig from '@config/rate-limit.config';
+import { GqlThrottlerGuard } from '@common/guards/gql-throttler.guard';
 import { AuthModule } from 'src/auth/auth.module';
 import { MailModule } from 'src/mail/mail.module';
 import { EmailVerificationModule } from 'src/email-verification/email-verification.module';
@@ -27,7 +31,14 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [jwtConfig, dbConfig, aiConfig, r2Config, mailConfig],
+      load: [jwtConfig, dbConfig, aiConfig, r2Config, mailConfig, rateLimitConfig],
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [rateLimitConfig.KEY],
+      useFactory: (config: ConfigType<typeof rateLimitConfig>) => ({
+        throttlers: [{ name: 'default', ttl: config.ttl, limit: config.limit }],
+      }),
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -48,7 +59,7 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
     AttendeesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: GqlThrottlerGuard }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
