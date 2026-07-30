@@ -1,6 +1,42 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 export type AIResultsDocument = HydratedDocument<AIResults>;
+
+// Frozen copies of what the LLM returned for this specific run — plain display data, no
+// ObjectId references — so a historical run can never be broken by later editing/deleting
+// the live ActionItem/Attendee it originally produced.
+@Schema({ _id: false })
+export class GeneratedActionItemSnapshot {
+  @Prop({ required: true })
+  description!: string;
+
+  @Prop()
+  assignee?: string;
+
+  @Prop()
+  deadline?: string;
+
+  @Prop({ required: true })
+  status!: string;
+}
+export const GeneratedActionItemSnapshotSchema = SchemaFactory.createForClass(
+  GeneratedActionItemSnapshot,
+);
+
+@Schema({ _id: false })
+export class GeneratedAttendeeSnapshot {
+  @Prop({ required: true })
+  name!: string;
+
+  @Prop()
+  email?: string;
+
+  @Prop({ required: true })
+  role!: string;
+}
+export const GeneratedAttendeeSnapshotSchema =
+  SchemaFactory.createForClass(GeneratedAttendeeSnapshot);
+
 @Schema({ timestamps: true })
 export class AIResults {
   @Prop({ required: true })
@@ -17,6 +53,12 @@ export class AIResults {
 
   @Prop()
   followUpNotes?: string;
+
+  @Prop({ type: [GeneratedActionItemSnapshotSchema], default: [] })
+  generatedActionItems!: GeneratedActionItemSnapshot[];
+
+  @Prop({ type: [GeneratedAttendeeSnapshotSchema], default: [] })
+  generatedAttendees!: GeneratedAttendeeSnapshot[];
 }
 
 export const AIResultsSchema = SchemaFactory.createForClass(AIResults);

@@ -109,7 +109,6 @@ export class AiService {
     const keepIds = await this.actionItemsService.findManualAssigneeIds(meetingId);
     await this.actionItemsService.deleteAiGeneratedByMeetingId(meetingId);
     await this.attendeesService.deleteAiGeneratedByMeetingId(meetingId, keepIds);
-    await this.aiResultsModel.deleteMany({ meetingId: new Types.ObjectId(meetingId) });
   }
 
   private async generateResults(meetingId: string, transcript: string) {
@@ -205,6 +204,17 @@ export class AiService {
       decisions: results.decisions ?? undefined,
       followUpNotes: results.followUpNotes ?? undefined,
       detailedNotes: results.detailedNotes ?? undefined,
+      generatedActionItems: results.actionItems.map((actionItem) => ({
+        description: actionItem.description,
+        assignee: actionItem.assignee ?? undefined,
+        deadline: actionItem.deadline ?? undefined,
+        status: actionItem.status,
+      })),
+      generatedAttendees: results.attendees.map((attendee) => ({
+        name: attendee.name,
+        email: attendee.email ?? undefined,
+        role: attendee.role,
+      })),
     });
   }
 
@@ -223,10 +233,18 @@ export class AiService {
   async findAIMeetingResults(userId: string, meetingId: string) {
     await this.meetingsService.findMeeting(userId, meetingId);
 
-    const aiResults = await this.aiResultsModel.findOne({
-      meetingId: new Types.ObjectId(meetingId),
-    });
+    const aiResults = await this.aiResultsModel
+      .findOne({ meetingId: new Types.ObjectId(meetingId) })
+      .sort({ createdAt: -1 });
     return aiResults;
+  }
+
+  async findAIResultsHistory(userId: string, meetingId: string) {
+    await this.meetingsService.findMeeting(userId, meetingId);
+
+    return await this.aiResultsModel
+      .find({ meetingId: new Types.ObjectId(meetingId) })
+      .sort({ createdAt: -1 });
   }
 
   async deleteByMeetingIds(meetingIds: Types.ObjectId[]) {

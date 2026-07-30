@@ -32,6 +32,14 @@ export class AiResolver {
     return this.aiService.findAIMeetingResults(user.userId, meetingId);
   }
 
+  @Query(() => [AIResults])
+  getAIResultsHistory(
+    @Args('meetingId') meetingId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.aiService.findAIResultsHistory(user.userId, meetingId);
+  }
+
   @ResolveField(() => [ActionItem])
   actionItems(@Parent() aiResults: AIResults) {
     return this.actionItemsService.findActionItemsByMeetingId(aiResults.meetingId.toString());
