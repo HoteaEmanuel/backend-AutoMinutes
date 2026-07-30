@@ -21,6 +21,9 @@ export class User {
   @Field(() => Provider, { nullable: true })
   provider?: Provider;
 
+  @Field(() => Boolean)
+  hasPassword!: boolean;
+
   @Field()
   createdAt!: Date;
 }
