@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
@@ -29,6 +29,11 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   me(@CurrentUser() currentUser: AuthenticatedUser) {
     return this.usersService.findById(currentUser.userId);
+  }
+
+  @ResolveField(() => Boolean)
+  hasPassword(@Parent() user: User) {
+    return this.usersService.hasPassword(user.id);
   }
 
   @Mutation(() => User)

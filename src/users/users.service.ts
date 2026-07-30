@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -59,11 +53,19 @@ export class UsersService {
       );
 
     const passwordsMatch = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!passwordsMatch) throw new UnauthorizedException('Current password is incorrect');
+    if (!passwordsMatch) throw new BadRequestException('Current password is incorrect');
 
     user.passwordHash = await bcrypt.hash(newPassword, 12);
     await user.save();
     return true;
+  }
+
+  async hasPassword(userId: string): Promise<boolean> {
+    const user = await this.userModel.exists({
+      _id: new Types.ObjectId(userId),
+      passwordHash: { $exists: true, $ne: null },
+    });
+    return !!user;
   }
 
   async setPassword(userId: string, newPassword: string) {
@@ -142,23 +144,4 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
-
-  // findOne(id: number): User {
-  //   const user = this.users.find((u) => u.id === id);
-  //   if (!user) throw new NotFoundException(`User #${id} not found`);
-  //   return user;
-  // }
-
-  // update(id: number, updateUserDto: UpdateUserDto): User {
-  //   const user = this.findOne(id);
-  //   Object.assign(user, updateUserDto);
-  //   return user;
-  // }
-
-  // remove(id: number): User {
-  //   const index = this.users.findIndex((u) => u.id === id);
-  //   if (index === -1) throw new NotFoundException(`User #${id} not found`);
-  //   const [removed] = this.users.splice(index, 1);
-  //   return removed;
-  // }
 }

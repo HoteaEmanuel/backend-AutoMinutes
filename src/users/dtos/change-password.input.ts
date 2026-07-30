@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsString, IsStrongPassword, MaxLength } from 'class-validator';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 
 @InputType()
 export class ChangePasswordInput {
@@ -9,7 +9,7 @@ export class ChangePasswordInput {
 
   @Field()
   @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(50)
-  @IsStrongPassword()
   newPassword!: string;
 }
