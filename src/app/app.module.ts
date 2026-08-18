@@ -42,7 +42,10 @@ import { AttendeesModule } from 'src/attendees/attendees.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      // Vercel's serverless filesystem is read-only outside /tmp: writing the schema
+      // file there would crash bootstrap on every invocation, so only write it to disk
+      // for local dev (where it's used for tooling/codegen) and keep it in-memory in prod.
+      autoSchemaFile: process.env.VERCEL ? true : join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
