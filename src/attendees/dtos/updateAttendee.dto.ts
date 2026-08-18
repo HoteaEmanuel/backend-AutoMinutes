@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { AttendeeRole } from '../enums/attendeeRole.enum';
-import { NAME_MAX_LENGTH } from '@common/constants/validation.constants';
+import { NAME_MAX_LENGTH } from '../../common/constants/validation.constants';
 
 @InputType()
 export class updateAttendeeDto {

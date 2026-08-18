@@ -4,8 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import dbConfig from '@config/db.config';
-import { DatabaseModule } from '@database/database.module';
+import dbConfig from '../config/db.config';
+import { DatabaseModule } from '../database/database.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({

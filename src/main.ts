@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from '@app/app.module';
+import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { json } from 'express';
-import rateLimitConfig from '@config/rate-limit.config';
+import rateLimitConfig from './config/rate-limit.config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.use(cookieParser());

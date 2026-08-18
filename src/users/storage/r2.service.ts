@@ -1,7 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { type ConfigType } from '@nestjs/config';
-import r2Config from '@config/r2.config';
+import r2Config from '../../config/r2.config';
 
 @Injectable()
 export class R2Service {

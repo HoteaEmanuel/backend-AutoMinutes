@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Provider } from '@users/enums/provider.enum';
+import { Provider } from '../enums/provider.enum';
 
 @ObjectType()
 export class User {

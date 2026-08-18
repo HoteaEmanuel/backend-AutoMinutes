@@ -11,9 +11,9 @@ import { memoryStorage } from 'multer';
 import sharp from 'sharp';
 import { UsersService } from './users.service';
 import { R2Service } from './storage/r2.service';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import { type AuthenticatedUser } from 'src/types/express';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { type AuthenticatedUser } from '../types/express';
 
 const AVATAR_SIZE = 512;
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8 MB

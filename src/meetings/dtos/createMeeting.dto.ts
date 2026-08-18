@@ -1,6 +1,6 @@
 import { Field, GraphQLISODateTime, InputType } from '@nestjs/graphql';
 import { IsDate, IsNotEmpty, IsOptional, IsString, MaxLength, MinDate } from 'class-validator';
-import { DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH } from '@common/constants/validation.constants';
+import { DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH } from '../../common/constants/validation.constants';
 
 const startOfToday = () => {
   const date = new Date();

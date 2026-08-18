@@ -10,16 +10,16 @@ import { ConfigService } from '@nestjs/config';
 import { generateResultsPrompt } from './prompts/generateResults.prompt';
 import { generateResultsSchema } from './prompts/generateResults.schema';
 import { aiResultsDto } from './dtos/aiResults.dto';
-import { AttendeeRole } from 'src/attendees/enums/attendeeRole.enum';
-import { AttendeesService } from 'src/attendees/attendees.service';
-import { addAttendeeDto } from 'src/attendees/dtos/addAttendee.dto';
-import { ActionItemsService } from 'src/action-items/action-items.service';
-import { ActionItemStatus as ActionItemStatusEnum } from 'src/action-items/enums/actionItemsStatus';
+import { AttendeeRole } from '../attendees/enums/attendeeRole.enum';
+import { AttendeesService } from '../attendees/attendees.service';
+import { addAttendeeDto } from '../attendees/dtos/addAttendee.dto';
+import { ActionItemsService } from '../action-items/action-items.service';
+import { ActionItemStatus as ActionItemStatusEnum } from '../action-items/enums/actionItemsStatus';
 import { InjectModel } from '@nestjs/mongoose';
 import { AIResults, AIResultsDocument } from './schemas/aiResults.schema';
 import { Model, Types } from 'mongoose';
-import { MeetingsService } from 'src/meetings/meetings.service';
-import { MeetingStatus } from 'src/meetings/enums/meeting-status.enum';
+import { MeetingsService } from '../meetings/meetings.service';
+import { MeetingStatus } from '../meetings/enums/meeting-status.enum';
 
 export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 

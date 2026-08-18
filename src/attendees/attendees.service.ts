@@ -5,7 +5,7 @@ import { addAttendeeDto } from './dtos/addAttendee.dto';
 import { Attendee, type AttendeeDocument } from './schemas/attendee.schema';
 import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { MeetingsService } from 'src/meetings/meetings.service';
+import { MeetingsService } from '../meetings/meetings.service';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

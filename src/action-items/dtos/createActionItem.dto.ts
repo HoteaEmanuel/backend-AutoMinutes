@@ -9,7 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ActionItemStatus } from '../enums/actionItemsStatus';
-import { DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH } from '@common/constants/validation.constants';
+import { DESCRIPTION_MAX_LENGTH, TITLE_MAX_LENGTH } from '../../common/constants/validation.constants';
 
 @InputType()
 export class CreateActionItemDto {

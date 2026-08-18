@@ -3,8 +3,8 @@ import { AttendeesService } from './attendees.service';
 import { AttendeesResolver } from './attendees.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Attendee, AttendeeSchema } from './schemas/attendee.schema';
-import { AuthModule } from 'src/auth/auth.module';
-import { MeetingsModule } from 'src/meetings/meetings.module';
+import { AuthModule } from '../auth/auth.module';
+import { MeetingsModule } from '../meetings/meetings.module';
 
 @Module({
   providers: [AttendeesResolver, AttendeesService],

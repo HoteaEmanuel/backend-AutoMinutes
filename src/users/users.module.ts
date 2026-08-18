@@ -5,11 +5,11 @@ import { UsersController } from './users.controller';
 import { R2Service } from './storage/r2.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
-import { AuthModule } from 'src/auth/auth.module';
-import { MeetingsModule } from 'src/meetings/meetings.module';
-import { AttendeesModule } from 'src/attendees/attendees.module';
-import { ActionItemsModule } from 'src/action-items/action-items.module';
-import { AiModule } from 'src/ai/ai.module';
+import { AuthModule } from '../auth/auth.module';
+import { MeetingsModule } from '../meetings/meetings.module';
+import { AttendeesModule } from '../attendees/attendees.module';
+import { ActionItemsModule } from '../action-items/action-items.module';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
   controllers: [UsersController],

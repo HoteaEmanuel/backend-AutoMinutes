@@ -7,8 +7,8 @@ import { CreateActionItemDto } from './dtos/createActionItem.dto';
 import { DeleteActionItemDto } from './dtos/deleteActionItem.dto';
 import { UpdateActionItemDto } from './dtos/updateActionItem.dto';
 import { ActionItemsFilterDto } from './dtos/actionItemsFilter.dto';
-import { MeetingsService } from 'src/meetings/meetings.service';
-import { AttendeesService } from 'src/attendees/attendees.service';
+import { MeetingsService } from '../meetings/meetings.service';
+import { AttendeesService } from '../attendees/attendees.service';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

@@ -16,8 +16,8 @@ import { RegisterDto } from './dtos/register.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import googleOauthConfig from './config/google-oauth.config';
-import { EmailVerificationService } from 'src/email-verification/email-verification.service';
-import { PasswordResetService } from 'src/password-reset/password-reset.service';
+import { EmailVerificationService } from '../email-verification/email-verification.service';
+import { PasswordResetService } from '../password-reset/password-reset.service';
 
 type tokenCreationProps = {
   sub: string;

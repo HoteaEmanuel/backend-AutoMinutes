@@ -1,6 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { ActionItemStatus } from '../enums/actionItemsStatus';
-import { Attendee } from 'src/attendees/entities/attendee.entity';
+import { Attendee } from '../../attendees/entities/attendee.entity';
 
 @ObjectType()
 export class ActionItem {

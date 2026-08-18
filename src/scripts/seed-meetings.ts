@@ -4,8 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import dbConfig from '@config/db.config';
-import { DatabaseModule } from '@database/database.module';
+import dbConfig from '../config/db.config';
+import { DatabaseModule } from '../database/database.module';
 import { Meeting, MeetingSchema } from '../meetings/schemas/meetings.schema';
 import { MeetingStatus } from '../meetings/enums/meeting-status.enum';
 import { User, UserSchema } from '../users/schemas/user.schema';

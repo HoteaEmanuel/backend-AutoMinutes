@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { randomBytes, createHash } from 'node:crypto';
 import { PasswordReset } from './schemas/password-reset.schema';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 import {
   passwordResetTemplate,
   googleAccountNoticeTemplate,
-} from 'src/mail/templates/password-reset.template';
+} from '../mail/templates/password-reset.template';
 
 const TOKEN_TTL_MS = 60 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;

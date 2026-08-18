@@ -15,7 +15,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
-import { UsersService } from '@users/users.service';
+import { UsersService } from '../users/users.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
@@ -24,7 +24,7 @@ import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import type { Response, Request } from 'express';
 import { CurrentUser } from './decorator/current-user.decorator';
-import { type AuthenticatedUser } from 'src/types/express';
+import { type AuthenticatedUser } from '../types/express';
 import type { ConfigType } from '@nestjs/config';
 import googleOauthConfig from './config/google-oauth.config';
 @Controller('/auth')

@@ -9,7 +9,7 @@ import { TranscriptDocument } from './schemas/transcript.schema';
 import { PaginatedMeetingsDto } from './dtos/paginatedMeetings.dto';
 import { UploadTranscriptDto } from './dtos/uploadTranscript.dto';
 import { MeetingStatus } from './enums/meeting-status.enum';
-import { ActionItem, ActionItemDocument } from 'src/action-items/schemas/actionItem.schema';
+import { ActionItem, ActionItemDocument } from '../action-items/schemas/actionItem.schema';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

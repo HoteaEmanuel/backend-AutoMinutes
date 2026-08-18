@@ -1,15 +1,15 @@
 import { Args, Mutation, Resolver, Query, ResolveField, Parent } from '@nestjs/graphql';
 import { AiService } from './ai.service';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { AIResults } from './entities/aiResults.entity';
 import { aiResultsDto } from './dtos/aiResults.dto';
-import { ActionItem } from 'src/action-items/entities/actionItem.entity';
-import { ActionItemsService } from 'src/action-items/action-items.service';
-import { Attendee } from 'src/attendees/entities/attendee.entity';
-import { AttendeesService } from 'src/attendees/attendees.service';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import type { AuthenticatedUser } from 'src/types/express';
+import { ActionItem } from '../action-items/entities/actionItem.entity';
+import { ActionItemsService } from '../action-items/action-items.service';
+import { Attendee } from '../attendees/entities/attendee.entity';
+import { AttendeesService } from '../attendees/attendees.service';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import type { AuthenticatedUser } from '../types/express';
 
 @Resolver(() => AIResults)
 @UseGuards(AuthGuard)

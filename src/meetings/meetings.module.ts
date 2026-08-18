@@ -1,11 +1,11 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 import { MeetingsResolver } from './meetings.resolver';
 import { MeetingsService } from './meetings.service';
 import { Meeting, MeetingSchema } from './schemas/meetings.schema';
 import { Transcript, TranscriptSchema } from './schemas/transcript.schema';
-import { ActionItem, ActionItemSchema } from 'src/action-items/schemas/actionItem.schema';
+import { ActionItem, ActionItemSchema } from '../action-items/schemas/actionItem.schema';
 
 @Module({
   providers: [MeetingsResolver, MeetingsService],

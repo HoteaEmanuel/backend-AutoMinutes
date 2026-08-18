@@ -1,7 +1,7 @@
 import { Field, GraphQLISODateTime, ID, ObjectType } from '@nestjs/graphql';
 import { Types } from 'mongoose';
-import { ActionItem } from 'src/action-items/entities/actionItem.entity';
-import { Attendee } from 'src/attendees/entities/attendee.entity';
+import { ActionItem } from '../../action-items/entities/actionItem.entity';
+import { Attendee } from '../../attendees/entities/attendee.entity';
 
 @ObjectType()
 export class GeneratedActionItemSnapshot {

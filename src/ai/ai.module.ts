@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { AiResolver } from './ai.resolver';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AIResults, AIResultsSchema } from './schemas/aiResults.schema';
-import { AttendeesModule } from 'src/attendees/attendees.module';
-import { ActionItemsModule } from 'src/action-items/action-items.module';
-import { MeetingsModule } from 'src/meetings/meetings.module';
+import { AttendeesModule } from '../attendees/attendees.module';
+import { ActionItemsModule } from '../action-items/action-items.module';
+import { MeetingsModule } from '../meetings/meetings.module';
 
 @Module({
   providers: [AiResolver, AiService],

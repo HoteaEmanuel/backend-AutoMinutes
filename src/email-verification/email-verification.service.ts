@@ -4,11 +4,11 @@ import { Model, Types } from 'mongoose';
 import { randomInt } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 import { EmailVerification } from './schemas/email-verification.schema';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 import {
   verificationCodeTemplate,
   existingAccountNoticeTemplate,
-} from 'src/mail/templates/verification-code.template';
+} from '../mail/templates/verification-code.template';
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const CODE_TTL_MINUTES = CODE_TTL_MS / (60 * 1000);

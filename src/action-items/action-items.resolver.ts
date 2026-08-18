@@ -1,19 +1,19 @@
 import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { ActionItemsService } from './action-items.service';
 import { ActionItem } from './entities/actionItem.entity';
-import { Meeting } from 'src/meetings/entities/meeting.entity';
+import { Meeting } from '../meetings/entities/meeting.entity';
 import { NotFoundException, UseGuards } from '@nestjs/common';
 import { Query } from '@nestjs/graphql';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { CreateActionItemDto } from './dtos/createActionItem.dto';
 import { DeleteActionItemDto } from './dtos/deleteActionItem.dto';
 import { UpdateActionItemDto } from './dtos/updateActionItem.dto';
-import { Attendee } from 'src/attendees/entities/attendee.entity';
-import { AttendeesService } from 'src/attendees/attendees.service';
+import { Attendee } from '../attendees/entities/attendee.entity';
+import { AttendeesService } from '../attendees/attendees.service';
 import { Types } from 'mongoose';
 import { ActionItemsFilterDto } from './dtos/actionItemsFilter.dto';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import type { AuthenticatedUser } from 'src/types/express';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import type { AuthenticatedUser } from '../types/express';
 
 @Resolver(() => Meeting)
 @UseGuards(AuthGuard)

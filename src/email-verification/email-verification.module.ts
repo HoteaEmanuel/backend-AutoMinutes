@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EmailVerification, EmailVerificationSchema } from './schemas/email-verification.schema';
 import { EmailVerificationService } from './email-verification.service';
-import { MailModule } from 'src/mail/mail.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [

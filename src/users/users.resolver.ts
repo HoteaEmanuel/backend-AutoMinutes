@@ -1,18 +1,18 @@
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import { type AuthenticatedUser } from 'src/types/express';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { type AuthenticatedUser } from '../types/express';
 import { UsersService } from './users.service';
 import { R2Service } from './storage/r2.service';
 import { User } from './entities/user.entity';
 import { UpdateProfileInput } from './dtos/update-profile.input';
 import { ChangePasswordInput } from './dtos/change-password.input';
 import { SetPasswordInput } from './dtos/set-password.input';
-import { MeetingsService } from 'src/meetings/meetings.service';
-import { AttendeesService } from 'src/attendees/attendees.service';
-import { ActionItemsService } from 'src/action-items/action-items.service';
-import { AiService } from 'src/ai/ai.service';
+import { MeetingsService } from '../meetings/meetings.service';
+import { AttendeesService } from '../attendees/attendees.service';
+import { ActionItemsService } from '../action-items/action-items.service';
+import { AiService } from '../ai/ai.service';
 
 @Resolver(() => User)
 export class UsersResolver {

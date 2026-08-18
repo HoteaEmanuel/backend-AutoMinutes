@@ -9,7 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { AttendeeRole } from '../enums/attendeeRole.enum';
-import { NAME_MAX_LENGTH } from '@common/constants/validation.constants';
+import { NAME_MAX_LENGTH } from '../../common/constants/validation.constants';
 
 @InputType()
 export class addAttendeeDto {
