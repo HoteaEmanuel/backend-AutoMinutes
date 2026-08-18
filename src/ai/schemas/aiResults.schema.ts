@@ -2,9 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 export type AIResultsDocument = HydratedDocument<AIResults>;
 
-// Frozen copies of what the LLM returned for this specific run — plain display data, no
-// ObjectId references — so a historical run can never be broken by later editing/deleting
-// the live ActionItem/Attendee it originally produced.
 @Schema({ _id: false })
 export class GeneratedActionItemSnapshot {
   @Prop({ required: true })

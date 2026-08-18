@@ -90,6 +90,8 @@ export class MeetingsService {
   }
 
   async findMeeting(userId: string, meetingId: string) {
+    if (!Types.ObjectId.isValid(meetingId)) throw new NotFoundException('Meeting was not found');
+
     const meeting = await this.meetingModel.findOne({
       _id: new Types.ObjectId(meetingId),
       owner: new Types.ObjectId(userId),
