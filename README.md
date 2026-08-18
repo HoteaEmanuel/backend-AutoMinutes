@@ -95,6 +95,19 @@ npm run seed:meetings -- <userId> [count]   # seed fake meetings for an existing
 npm run backfill:email-verified             # one-off migration script
 ```
 
+## Deploying to Vercel
+
+The app runs as a single serverless function (`api/index.js`) that boots the compiled Nest app and caches it across warm invocations - `vercel.json` sets `"framework": null` and points everything there via `rewrites`, bypassing Vercel's own NestJS zero-config detection (which repeatedly mis-wrapped this project's `main.ts`).
+
+For this to actually take effect, in the Vercel dashboard under **Project → Settings → Build and Deployment**:
+
+- **Framework Preset** must be `Other` (not `Next.js` or `Nest.js`) - a saved preset there overrides `vercel.json` every time.
+- **Build Command** / **Output Directory** overrides should be off (or set to `npm run build` / `public` respectively) so `vercel.json` applies.
+
+After changing dashboard settings, redeploy fresh (push a commit, or Redeploy with "Use existing Build Cache" unchecked) - reusing an old deployment can keep its original settings/cache.
+
+Required env vars beyond local dev: `MONGODB_URI` pointing at a reachable database (e.g. MongoDB Atlas - `localhost` won't work), `FRONTEND_URL`/`GOOGLE_CALLBACK_URL` set to the deployed URLs, `TRUST_PROXY=true` (Vercel sits in front as a reverse proxy), and `AI_PROVIDER=groq` with `GROQ_API_KEY` set (Ollama isn't reachable from serverless).
+
 ## API surface
 
 Most operations go through a single GraphQL endpoint (`POST /graphql`). A handful of REST routes exist where cookies or multipart bodies make more sense than GraphQL:
