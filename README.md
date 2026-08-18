@@ -97,14 +97,11 @@ npm run backfill:email-verified             # one-off migration script
 
 ## Deploying to Vercel
 
-The app runs as a single serverless function (`api/index.js`) that boots the compiled Nest app and caches it across warm invocations - `vercel.json` sets `"framework": null` and points everything there via `rewrites`, bypassing Vercel's own NestJS zero-config detection (which repeatedly mis-wrapped this project's `main.ts`).
+The app runs as a single serverless function (`api/index.ts`) that boots the Nest app and caches it across warm invocations. `vercel.json` uses the legacy `builds`/`routes` config, which takes full manual control of the build and bypasses Vercel's zero-config framework detection entirely - no Dashboard "Framework Preset", "Build Command", or "Output Directory" setting matters once `builds` is present, which matters here because Vercel's own NestJS zero-config detection repeatedly mis-wrapped this project's `main.ts` (broken alias resolution, "no exports found", a missing static output directory).
 
-For this to actually take effect, in the Vercel dashboard under **Project → Settings → Build and Deployment**:
+Because of this, path aliases (`@app/*`, `@config/*`, etc.) aren't used anywhere in `src/` - everything is plain relative imports, since `@vercel/node` compiles `api/index.ts` (and everything it imports) directly from TS source and doesn't resolve tsconfig `paths`.
 
-- **Framework Preset** must be `Other` (not `Next.js` or `Nest.js`) - a saved preset there overrides `vercel.json` every time.
-- **Build Command** / **Output Directory** overrides should be off (or set to `npm run build` / `public` respectively) so `vercel.json` applies.
-
-After changing dashboard settings, redeploy fresh (push a commit, or Redeploy with "Use existing Build Cache" unchecked) - reusing an old deployment can keep its original settings/cache.
+After changing anything deploy-related, redeploy fresh (push a commit, or Redeploy with "Use existing Build Cache" unchecked) - reusing an old deployment can keep its original settings/cache.
 
 Required env vars beyond local dev: `MONGODB_URI` pointing at a reachable database (e.g. MongoDB Atlas - `localhost` won't work), `FRONTEND_URL`/`GOOGLE_CALLBACK_URL` set to the deployed URLs, `TRUST_PROXY=true` (Vercel sits in front as a reverse proxy), and `AI_PROVIDER=groq` with `GROQ_API_KEY` set (Ollama isn't reachable from serverless).
 
