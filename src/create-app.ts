@@ -14,7 +14,21 @@ export async function createApp() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );
-  app.enableCors({ origin: process.env.FRONTEND_URL, credentials: true });
+  // FRONTEND_URL is the stable production domain, but Vercel also spins up a
+  // fresh hashed preview URL (frontend-auto-minutes-<hash>-<team>.vercel.app)
+  // for every deployment, so a single exact-match origin can't cover both.
+  const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, '');
+  const previewUrlPattern = /^https:\/\/frontend-auto-minutes-[a-z0-9]+-[a-z0-9-]+\.vercel\.app$/;
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin || origin === frontendUrl || previewUrlPattern.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+    credentials: true,
+  });
 
   // Only trust X-Forwarded-For when actually deployed behind a real reverse
   // proxy/load balancer — otherwise a client could spoof req.ip and dodge
