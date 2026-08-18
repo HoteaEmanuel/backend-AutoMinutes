@@ -53,6 +53,14 @@ interface OllamaChatResponse {
   };
 }
 
+interface GroqChatResponse {
+  choices?: {
+    message?: {
+      content?: string;
+    };
+  }[];
+}
+
 const actionItemStatusMap: Record<ActionItemStatus, ActionItemStatusEnum> = {
   OPEN: ActionItemStatusEnum.OPEN,
   IN_PROGRESS: ActionItemStatusEnum.IN_PROGRESS,
@@ -63,8 +71,11 @@ const actionItemStatusMap: Record<ActionItemStatus, ActionItemStatusEnum> = {
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
+  private readonly provider: string;
   private readonly baseUrl: string;
   private readonly model: string;
+  private readonly groqApiKey?: string;
+  private readonly groqModel: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -73,8 +84,11 @@ export class AiService {
     private readonly actionItemsService: ActionItemsService,
     private readonly meetingsService: MeetingsService,
   ) {
+    this.provider = this.config.getOrThrow<string>('ai.provider');
     this.baseUrl = this.config.getOrThrow<string>('ai.baseUrl');
     this.model = this.config.getOrThrow<string>('ai.model');
+    this.groqApiKey = this.config.get<string>('ai.groq.apiKey');
+    this.groqModel = this.config.getOrThrow<string>('ai.groq.model');
   }
 
   async processAIResults(userId: string, aiInput: aiResultsDto) {
@@ -111,8 +125,7 @@ export class AiService {
     await this.attendeesService.deleteAiGeneratedByMeetingId(meetingId, keepIds);
   }
 
-  private async generateResults(meetingId: string, transcript: string) {
-    let responseText: string | undefined;
+  private async callOllama(meetingId: string, transcript: string): Promise<string | undefined> {
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
@@ -130,7 +143,7 @@ export class AiService {
       }
 
       const data = (await response.json()) as OllamaChatResponse;
-      responseText = data.message?.content;
+      return data.message?.content;
     } catch (error) {
       this.logger.error(
         `Ollama request failed for meeting ${meetingId}`,
@@ -138,6 +151,49 @@ export class AiService {
       );
       throw new BadGatewayException('AI processing failed. Please try again later.');
     }
+  }
+
+  private async callGroq(meetingId: string, transcript: string): Promise<string | undefined> {
+    if (!this.groqApiKey) {
+      this.logger.error(`Groq request skipped for meeting ${meetingId}: GROQ_API_KEY is not set`);
+      throw new BadGatewayException('AI processing failed. Please try again later.');
+    }
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.groqApiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.groqModel,
+          messages: [{ role: 'user', content: generateResultsPrompt(transcript) }],
+          response_format: { type: 'json_object' },
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Groq request failed with status ${response.status}`);
+      }
+
+      const data = (await response.json()) as GroqChatResponse;
+      return data.choices?.[0]?.message?.content;
+    } catch (error) {
+      this.logger.error(
+        `Groq request failed for meeting ${meetingId}`,
+        error instanceof Error ? error.stack : error,
+      );
+      throw new BadGatewayException('AI processing failed. Please try again later.');
+    }
+  }
+
+  private async generateResults(meetingId: string, transcript: string) {
+    const responseText =
+      this.provider === 'groq'
+        ? await this.callGroq(meetingId, transcript)
+        : await this.callOllama(meetingId, transcript);
 
     if (!responseText) {
       throw new BadGatewayException('AI service returned an empty response.');
