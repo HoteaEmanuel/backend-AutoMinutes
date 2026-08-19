@@ -175,7 +175,8 @@ export class AiService {
       });
 
       if (!response.ok) {
-        throw new Error(`Groq request failed with status ${response.status}`);
+        const body = await response.text().catch(() => '');
+        throw new Error(`Groq request failed with status ${response.status}: ${body}`);
       }
 
       const data = (await response.json()) as GroqChatResponse;

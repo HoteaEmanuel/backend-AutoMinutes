@@ -6,6 +6,6 @@ export default registerAs('ai', () => ({
   model: process.env.OLLAMA_MODEL || 'llama3.1',
   groq: {
     apiKey: process.env.GROQ_API_KEY,
-    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
   },
 }));
