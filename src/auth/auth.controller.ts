@@ -38,10 +38,14 @@ export class AuthController {
 
   // Salvez refresh token ul intr un http only cookie
   saveCookie(refreshToken: string, res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      // Frontend and backend live on different Vercel subdomains, so this is
+      // a cross-site request: SameSite=None (+ Secure) is required or the
+      // browser drops the cookie on fetch/XHR calls like POST /auth/refresh.
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/auth',
       maxAge: 30 * 24 * 60 * 1000 * 60, // 30 zile
     });
@@ -133,8 +137,11 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard)
   logout(@Res({ passthrough: true }) res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('refresh_token', {
       path: '/auth',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
     });
     return {
       success: true,
